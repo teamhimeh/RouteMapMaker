@@ -13,7 +13,7 @@ gitに上げる前の、各バージョンごとの改変履歴はhistory.txtに
 Welcome to RouteMapMaker! This application enables you to make beautiful route-map very easily.  
 To download execute files and get more information, please visit http://wikiwiki.jp/routemapmake/ (Sorry, Japanese Only.)  
 
-This application have been developed without github. Only ver10.2 and older versions are recorded on git. To use older versions, please download them from wiki site.   
+This application have been developed without github. Only ver10.2 and later versions are recorded on git. To use earlier versions, please download them from wiki site.   
 
 RouteMapMaker can be used, changed, re-distributed under CC BY-NC 4.0 license(https://creativecommons.org/licenses/by-nc/4.0/).  
 
