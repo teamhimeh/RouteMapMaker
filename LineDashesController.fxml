@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="240.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.LineDashesController">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+         <children>
+            <ListView fx:id="list" layoutX="14.0" layoutY="14.0" prefHeight="213.0" prefWidth="78.0" />
+            <Canvas fx:id="canvas" height="20.0" layoutX="186.0" layoutY="14.0" width="200.0" />
+            <Label layoutX="97.0" layoutY="16.0" text="表示サンプル" />
+            <TextField fx:id="textField" disable="true" layoutX="100.0" layoutY="65.0" prefHeight="27.0" prefWidth="286.0" />
+            <Label fx:id="label" layoutX="100.0" layoutY="48.0" text="半角でコードを入力" />
+            <Label layoutX="97.0" layoutY="112.0" text="例）" />
+            <Label layoutX="97.0" layoutY="129.0" text="10,10 →実線10pt, 空白10pt" />
+            <Label layoutX="97.0" layoutY="146.0" text="20,5,10,5 →実線20pt, 空白5pt,実線10pt, 空白5pt" />
+            <Label layoutX="98.0" layoutY="171.0" text="数字は半角。半角カンマ区切り。数字は偶数個" />
+            <Button fx:id="add" layoutX="94.0" layoutY="199.0" mnemonicParsing="false" text="追加" />
+            <Button fx:id="delete" layoutX="137.0" layoutY="199.0" mnemonicParsing="false" text="削除" />
+         </children></AnchorPane>
+  </children>
+</VBox>

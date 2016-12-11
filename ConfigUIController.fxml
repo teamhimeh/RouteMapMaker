@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="400.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.ConfigUIController">
+   <children>
+      <Pane prefHeight="223.0" prefWidth="200.0">
+         <children>
+            <Label layoutX="14.0" layoutY="6.0" text="&lt;路線編集モード&gt;" />
+            <Label layoutX="5.0" layoutY="26.0" text="グリッドを表示する" />
+            <CheckBox fx:id="showGrid" layoutX="132.0" layoutY="26.0" mnemonicParsing="false" selected="true" />
+            <Label layoutX="5.0" layoutY="52.0" text="グリッド間隔" />
+            <Spinner fx:id="GridInterval" editable="true" layoutX="91.0" layoutY="47.0" prefHeight="27.0" prefWidth="94.0" />
+            <Label layoutX="6.0" layoutY="81.0" text="座標をグリッドに合わせる" />
+            <CheckBox fx:id="BindX" layoutX="32.0" layoutY="98.0" mnemonicParsing="false" selected="true" text="X" />
+            <CheckBox fx:id="BindY" layoutX="106.0" layoutY="98.0" mnemonicParsing="false" selected="true" text="Y" />
+            <Label layoutX="6.0" layoutY="123.0" text="座標固定駅の点の色" />
+            <ColorPicker fx:id="fixedColor" layoutX="15.0" layoutY="140.0" />
+            <Label layoutX="6.0" layoutY="173.0" text="座標非固定駅の点の色" />
+            <ColorPicker fx:id="nonFixedColor" layoutX="15.0" layoutY="190.0" />
+         </children>
+      </Pane>
+      <Pane prefHeight="139.0" prefWidth="200.0">
+         <children>
+            <Label layoutX="25.0" layoutY="11.0" text="&lt;一般&gt;" />
+            <CheckBox fx:id="menubarMode" layoutX="14.0" layoutY="28.0" mnemonicParsing="false" selected="true" text="OSのメニューバーを使用" />
+         </children>
+      </Pane>
+   </children>
+</VBox>

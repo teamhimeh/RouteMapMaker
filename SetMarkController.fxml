@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.SetMarkController">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+         <children>
+            <ListView fx:id="listM" layoutX="14.0" layoutY="31.0" prefHeight="325.0" prefWidth="86.0" />
+            <ListView fx:id="listA" layoutX="120.0" layoutY="31.0" prefHeight="325.0" prefWidth="154.0" />
+            <ListView fx:id="listB" layoutX="291.0" layoutY="31.0" prefHeight="325.0" prefWidth="154.0" />
+            <ListView fx:id="listC" layoutX="463.0" layoutY="31.0" prefHeight="325.0" prefWidth="154.0" />
+            <Label layoutX="40.0" layoutY="14.0" text="マーク" />
+            <Label layoutX="178.0" layoutY="14.0" text="路線" />
+            <Label layoutX="342.0" layoutY="14.0" text="運転系統" />
+            <Label layoutX="521.0" layoutY="14.0" text="停車駅" />
+            <Label layoutX="14.0" layoutY="369.0" text="停車駅をマウスで選択すると、現在選択されているマークがその駅に設定されます。" />
+         </children></AnchorPane>
+  </children>
+</VBox>
