@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="650.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="579.0" prefWidth="202.0" VBox.vgrow="ALWAYS">
+         <children>
+            <ListView fx:id="itemList" layoutX="15.0" layoutY="341.0" prefHeight="305.0" prefWidth="177.0" />
+            <Label layoutX="12.0" layoutY="14.0" text="アイテムを追加" />
+            <Button fx:id="addImage" layoutX="11.0" layoutY="31.0" mnemonicParsing="false" text="画像" />
+            <Button fx:id="addText" layoutX="54.0" layoutY="31.0" mnemonicParsing="false" text="text" />
+            <Button fx:id="copy" layoutX="95.0" layoutY="31.0" mnemonicParsing="false" text="複製" />
+            <Button fx:id="Delete" layoutX="158.0" layoutY="31.0" mnemonicParsing="false" text="削除" />
+            <Label layoutX="4.0" layoutY="72.0" text="X:" />
+            <Label layoutX="103.0" layoutY="72.0" text="Y:" />
+            <Spinner fx:id="paramSX" editable="true" layoutX="19.0" layoutY="67.0" prefHeight="27.0" prefWidth="84.0" />
+            <Spinner fx:id="paramSY" editable="true" layoutX="118.0" layoutY="67.0" prefHeight="27.0" prefWidth="84.0" />
+            <Label layoutX="4.0" layoutY="99.0" text="回転:" />
+            <Spinner fx:id="paramSR" editable="true" layoutX="76.0" layoutY="94.0" prefHeight="27.0" prefWidth="84.0" />
+            <Label fx:id="paramL0" layoutX="4.0" layoutY="126.0" text="paramL0:" />
+            <Spinner fx:id="paramS0" editable="true" layoutX="76.0" layoutY="121.0" prefHeight="27.0" prefWidth="84.0" />
+            <Label fx:id="paramL1" layoutX="4.0" layoutY="153.0" text="paramL1:" />
+            <Spinner fx:id="paramS1" editable="true" layoutX="76.0" layoutY="148.0" prefHeight="27.0" prefWidth="84.0" />
+            <Label layoutX="4.0" layoutY="180.0" text="文字色:" />
+            <ColorPicker fx:id="p_color" disable="true" layoutX="63.0" layoutY="175.0" prefHeight="27.0" prefWidth="134.0" />
+            <TextField fx:id="p_text" disable="true" layoutX="63.0" layoutY="202.0" prefHeight="27.0" prefWidth="134.0" />
+            <ChoiceBox fx:id="p_direction" disable="true" layoutX="63.0" layoutY="229.0" prefHeight="27.0" prefWidth="134.0" />
+            <ChoiceBox fx:id="p_fill" disable="true" layoutX="63.0" layoutY="256.0" prefHeight="27.0" prefWidth="134.0" />
+            <Label layoutX="4.0" layoutY="207.0" text="文字列:" />
+            <Label layoutX="4.0" layoutY="234.0" text="向き:" />
+            <Label layoutX="4.0" layoutY="261.0" text="描画:" />
+            <Label layoutX="4.0" layoutY="288.0" text="スタイル:" />
+            <ChoiceBox fx:id="p_style" disable="true" layoutX="63.0" layoutY="283.0" prefHeight="27.0" prefWidth="134.0" />
+            <Button fx:id="selectFont" disable="true" layoutX="64.0" layoutY="310.0" mnemonicParsing="false" text="選択" />
+            <Label layoutX="5.0" layoutY="315.0" text="フォント:" />
+         </children>
+    </AnchorPane>
+  </children>
+</VBox>

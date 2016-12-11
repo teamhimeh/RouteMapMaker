@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.TransformController">
+   <children>
+      <AnchorPane prefHeight="300.0" prefWidth="200.0">
+         <children>
+            <Label layoutX="14.0" layoutY="24.0" text="平行移動" />
+            <Label layoutX="84.0" layoutY="24.0" text="X:" />
+            <Spinner fx:id="trans_X" editable="true" layoutX="97.0" layoutY="19.0" prefHeight="27.0" prefWidth="89.0" />
+            <Label layoutX="214.0" layoutY="24.0" text="Y:" />
+            <Spinner fx:id="trans_Y" editable="true" layoutX="227.0" layoutY="19.0" prefHeight="27.0" prefWidth="89.0" />
+            <Button fx:id="trans_AP" layoutX="339.0" layoutY="19.0" mnemonicParsing="false" text="実行" textFill="RED" />
+            <Label layoutX="14.0" layoutY="71.0" text="スケール" />
+            <Label layoutX="84.0" layoutY="71.0" text="幅:" />
+            <Spinner fx:id="scale_Width" editable="true" layoutX="101.0" layoutY="66.0" prefHeight="27.0" prefWidth="89.0" />
+            <Label layoutX="230.0" layoutY="71.0" text="高さ:" />
+            <Spinner fx:id="scale_Height" editable="true" layoutX="260.0" layoutY="66.0" prefHeight="27.0" prefWidth="89.0" />
+            <CheckBox fx:id="scale_fix" layoutX="85.0" layoutY="104.0" mnemonicParsing="false" text="縦横比を固定" />
+            <Button fx:id="scale_AP" layoutX="339.0" layoutY="100.0" mnemonicParsing="false" text="実行" textFill="RED" />
+            <Label layoutX="135.0" layoutY="137.0" text="X:" />
+            <Spinner fx:id="scale_X" editable="true" layoutX="148.0" layoutY="132.0" prefHeight="27.0" prefWidth="89.0" />
+            <Label layoutX="269.0" layoutY="137.0" text="Y:" />
+            <Spinner fx:id="scale_Y" editable="true" layoutX="282.0" layoutY="132.0" prefHeight="27.0" prefWidth="89.0" />
+            <Label layoutX="84.0" layoutY="137.0" text="基準点" />
+            <Label layoutX="84.0" layoutY="169.0" text="調整後のサイズ：" />
+            <Label fx:id="scale_after" layoutX="192.0" layoutY="169.0" text="after size" />
+            <Label layoutX="14.0" layoutY="269.0" text="※駅の座標のみが変換されます。" />
+            <Label layoutX="187.0" layoutY="24.0" text="px" />
+            <Label layoutX="320.0" layoutY="24.0" text="px" />
+            <Label layoutX="193.0" layoutY="71.0" text="％" />
+            <Label layoutX="354.0" layoutY="71.0" text="％" />
+            <Label layoutX="14.0" layoutY="252.0" text="入力後はenterで値を反映させてください" />
+            <Label layoutX="243.0" layoutY="137.0" text="px" />
+            <Label layoutX="375.0" layoutY="137.0" text="px" />
+         </children>
+      </AnchorPane>
+   </children>
+</VBox>
