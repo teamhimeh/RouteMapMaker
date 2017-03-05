@@ -65,9 +65,14 @@ public class editUIController implements Initializable{
 						alert.setContentText("全ての駅を停車駅として追加してよろしいですか？");
 						Optional<ButtonType> result = alert.showAndWait();
 						if(result.get() == ButtonType.OK){
-							train.getStops().clear();//停車駅を一度全て削除
-							for(int i = line.getStations().size() - 1; 0 <= i; i--){//最後から追加していく。
-								train.getStops().add(0, new TrainStop(line.getStations().get(i)));
+							//全削除してから再度追加だと既存駅の属性が失われるので足りない分を追加する。
+							int count = 0;
+							for(int i = 0; i < line.getStations().size(); i++){
+								if(!train.getStops().get(count).getSta().getName().equals(line.getStations().get(i).getName())){
+									//駅が存在しない
+									train.getStops().add(count, new TrainStop(line.getStations().get(i)));
+								}
+								count++;
 							}
 							olC.clear();
 							for(int i = 0; i < train.getStops().size(); i++){
