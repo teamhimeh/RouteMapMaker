@@ -68,7 +68,7 @@ public class editUIController implements Initializable{
 							//全削除してから再度追加だと既存駅の属性が失われるので足りない分を追加する。
 							int count = 0;
 							for(int i = 0; i < line.getStations().size(); i++){
-								if(!train.getStops().get(count).getSta().getName().equals(line.getStations().get(i).getName())){
+								if(train.getStops().size()==count||!train.getStops().get(count).getSta().getName().equals(line.getStations().get(i).getName())){
 									//駅が存在しない
 									train.getStops().add(count, new TrainStop(line.getStations().get(i)));
 								}

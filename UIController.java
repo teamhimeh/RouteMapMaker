@@ -130,7 +130,7 @@ public class UIController implements Initializable{
 	private final double pointRadious = 3;//駅の点の半径
 	final double canvasMargin = 200;
 	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
-	private final double ReleaseVersion = 10.4;//リリースバージョン。ユーザーへの案内用
+	private final double ReleaseVersion = 10.5;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
 	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
@@ -980,7 +980,7 @@ public class UIController implements Initializable{
 		mb_about.setOnAction((ActionEvent) ->{
 			Alert alert = new Alert(AlertType.NONE,"",ButtonType.CLOSE);
 			alert.getDialogPane().setHeaderText("バージョン情報");
-			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2017年3月5日\n"
+			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2017年3月31日\n"
 					+ "使い方の参照、不具合報告等はwikiで行うことができます。\n"
 					+ "不具合を発見された際はwikiもしくはTwitterでの報告にご協力をお願いします。\n\n"
 					+ "お問い合わせ：@teamhimeH（Twitter）\n2017 teamhimeH \nCreativeCommons 表示-非営利4.0国際ライセンスに従います。"
