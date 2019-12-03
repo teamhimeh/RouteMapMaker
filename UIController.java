@@ -28,9 +28,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -155,6 +157,7 @@ public class UIController implements Initializable{
 	@FXML AnchorPane rightPane;
 	@FXML Button RouteDelete;
 	@FXML Button RouteAdd;
+	@FXML Button RouteLoad;
 	@FXML Button staRemoveRestr;
 	@FXML Button staDeConnect;
 	@FXML Button StationDelete;
@@ -277,19 +280,7 @@ public class UIController implements Initializable{
 		lineDraw();
 		line = lineList.get(0);
 		RouteAdd.setOnAction((ActionEvent) ->{
-			Line newLine = new Line("路線" + (lineList.size()+1));
-			urManager.push(lineList, URElements.ArrayCommands.ADD, lineList.size(), newLine);
-			lineList.add(newLine);
-			newLinePointSet(lineList.get(lineList.size() - 1));
-			rnList.add(lineList.get(lineList.size()-1).getName());
-			RouteTable.getSelectionModel().select(rnList.size() - 1);
-			if(lineList.size() > 1){//既に路線があった場合は入力補助として駅名色、駅名大きさ、駅名スタイルを引き継ぐ
-				int lastIndex = lineList.size() - 1;
-				lineList.get(lastIndex).setTategaki(lineList.get(lastIndex - 1).isTategaki());
-				lineList.get(lastIndex).setNameColor(lineList.get(lastIndex - 1).getNameColor());
-				lineList.get(lastIndex).setNameSize(lineList.get(lastIndex - 1).getNameSize());
-				lineList.get(lastIndex).setNameStyle(lineList.get(lastIndex - 1).getNameStyle());
-			}
+			createNewLine(null);
 			lineDraw();
 		});
 		RouteDelete.setOnAction((ActionEvent) ->{
@@ -302,6 +293,37 @@ public class UIController implements Initializable{
 					rnList.add(lineList.get(i).getName());
 				}
 				lineDraw();
+			}
+		});
+		RouteLoad.setOnAction((ActionEvent) ->{
+			// 駅名が書かれたファイルを選択
+			FileChooser fc = new FileChooser();
+			FileChooser.ExtensionFilter txt = new FileChooser.ExtensionFilter("テキストファイル（*.txt）", "*.txt");
+			fc.setTitle("ファイルを開く");
+			fc.getExtensionFilters().add(txt);
+			File selectedFile = fc.showOpenDialog(null);
+			ArrayList<String> staNames = new ArrayList<String>();
+			try{
+				if(fc.getSelectedExtensionFilter() == txt){
+					BufferedReader br = new BufferedReader(new FileReader(selectedFile));
+					String line = br.readLine();
+					while(line != null) {
+						staNames.add(line);
+						line = br.readLine();
+					}
+					br.close();
+					createNewLine(staNames);
+				}
+			}catch(IOException e){
+				Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("エラーが発生しました。ファイルを読み込めません。");
+				alert.showAndWait();
+			}catch(Exception e){
+				e.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("エラーが発生しました。データファイルに不備があります。\n"
+						+ "以下のエラーメッセージを@teamhimehにお知らせください。\n" + e.getLocalizedMessage());
+				alert.showAndWait();
 			}
 		});
 		//駅名文字列の向きに関するトグルボタンの設定（路線単位）
@@ -430,7 +452,7 @@ public class UIController implements Initializable{
 				int staNum = 0;
 				while(true){
 					String d = staNum + "駅";
-					if(searchOverlap(d)){
+					if(findStaByName(d)!=null){
 						staNum++;
 					}else{
 						break;
@@ -1765,18 +1787,66 @@ public class UIController implements Initializable{
 		});
 	}
 	
-	boolean searchOverlap(String Cname){//候補の駅名がOKかどうか調べる。trueだとアウト。
-		boolean result = false;
-		for(int i=0; i < lineList.size(); i++){
-			for(int j=0; j < lineList.get(i).getStations().size(); j++){
-				if(Cname.equals(lineList.get(i).getStations().get(j).getName())){
-					result = true;
-					break;
+	// 路線を作成し，作成されたLineを返す
+	Line createNewLine(ArrayList<String> staNames) {
+		Line newLine = new Line("路線" + (lineList.size()+1));
+		if(lineList.size() > 0){//既に路線があった場合は入力補助として駅名色、駅名大きさ、駅名スタイルを引き継ぐ
+			final Line lastLine = lineList.get(lineList.size()-1);
+			newLine.setTategaki(lastLine.isTategaki());
+			newLine.setNameColor(lastLine.getNameColor());
+			newLine.setNameSize(lastLine.getNameSize());
+			newLine.setNameStyle(lastLine.getNameStyle());
+		}
+		
+		// staNamesが設定されている場合は駅を設定する
+		if(staNames!=null) {
+			// 空白などの無効な文字列を除く
+			final List<String> validStaNames = staNames.stream().filter(p -> p!=null && !p.isEmpty())
+					.collect(Collectors.toList());
+			if(validStaNames.size() < 2) {
+				// 駅名の数が足りない．
+				return null;
+			}
+			// 駅リストを用意する
+			List<Station> newLineStations = staNames.stream().map(n -> new Station(n))
+					.collect(Collectors.toList());
+			// 重複駅名について問い合わせる
+			int dup_process = 0; // 0:問い合わせ 1:すべて統合　2:すべて不統合
+			for(int i=0; i<newLineStations.size(); i++) {
+				final Station s = newLineStations.get(i);
+				final Station dup = findStaByName(s.getName());
+				if(dup==null || dup_process==2) {
+					// 重複なし or すべて不統合 → そのまま
+					continue;
+				}
+				else if(dup_process==1) {
+					// すべて統合 → 置き換え
+					newLineStations.set(i, dup);
+				}
+				else {
+					// 問い合わせ
 				}
 			}
-			if(result) break;
+			newLine.setStations(FXCollections.observableList(newLineStations));
 		}
-		return result;
+		
+		urManager.push(lineList, URElements.ArrayCommands.ADD, lineList.size(), newLine);
+		lineList.add(newLine);
+		newLinePointSet(newLine);
+		rnList.add(newLine.getName());
+		RouteTable.getSelectionModel().select(rnList.size() - 1);
+		return newLine;
+	}
+	
+	Station findStaByName(String Cname){//候補の駅名がOKかどうか調べる。trueだとアウト。
+		for (Line l : lineList) {
+			for (Station s : l.getStations()) {
+				if(Cname.equals(s.getName())) {
+					return s;
+				}
+			}
+		}
+		return null;
 	}
 	
 	void newLinePointSet(Line l){//新しく追加された路線のとりあえずの描画位置を決める。
@@ -1784,8 +1854,7 @@ public class UIController implements Initializable{
 		final double x_interval = 200;
 		final double y_interval = 50;
 		l.getStations().get(0).setPoint(start, y_largest + y_interval);//スタート地点
-		l.getStations().get(l.getStations().size() - 1).setPoint(start + (l.getStations().size() - 1) * x_interval,
-				y_largest + y_interval);
+		l.getStations().get(l.getStations().size() - 1).setPoint(start + x_interval, y_largest + y_interval);
 		y_largest = y_largest + y_interval;
 		canvasOriginal[0] = x_largest + canvasMargin * 2;//最初だけ余分に取っておいたほうがいいっぽい
 		canvasOriginal[1] = y_largest + canvasMargin * 2;

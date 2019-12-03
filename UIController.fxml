@@ -21,7 +21,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="500.0" minWidth="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.UIController">
+<AnchorPane minHeight="500.0" minWidth="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.UIController">
    <children>
       <ScrollPane fx:id="canvasPane" layoutX="200.0" layoutY="29.0" prefHeight="721.0" prefWidth="391.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="209.0" AnchorPane.topAnchor="29.0">
          <content>
@@ -35,46 +35,47 @@
       </ScrollPane>
       <ScrollPane hbarPolicy="NEVER" layoutX="582.0" layoutY="49.0" maxWidth="210.0" minWidth="210.0" prefHeight="1080.0" prefWidth="210.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="49.0">
          <content>
-          <AnchorPane fx:id="rightPane" minWidth="200.0" prefHeight="1039.0" prefWidth="208.0">
+          <AnchorPane fx:id="rightPane" minWidth="200.0" prefHeight="1154.0" prefWidth="208.0">
                <children>
-                  <ListView fx:id="RouteTable" editable="true" layoutX="25.0" layoutY="53.0" prefHeight="100.0" prefWidth="150.0" />
-                  <ListView fx:id="StationList" layoutX="22.0" layoutY="494.0" prefHeight="200.0" prefWidth="150.0" />
+                  <ListView fx:id="RouteTable" editable="true" layoutX="26.0" layoutY="75.0" prefHeight="100.0" prefWidth="150.0" />
+                  <ListView fx:id="StationList" layoutX="23.0" layoutY="516.0" prefHeight="200.0" prefWidth="150.0" />
                   <Label layoutX="25.0" layoutY="23.0" text="路線一覧" />
-                  <Button fx:id="RouteAdd" layoutX="87.0" layoutY="18.0" mnemonicParsing="false" text="追加" />
-                  <Button fx:id="RouteDelete" layoutX="131.0" layoutY="18.0" mnemonicParsing="false" text="削除" />
-                  <Label layoutX="17.0" layoutY="467.0" text="駅一覧" />
-                  <Button fx:id="StationAdd" layoutX="75.0" layoutY="462.0" mnemonicParsing="false" text="追加" />
-                  <Button fx:id="StationDelete" layoutX="119.0" layoutY="462.0" mnemonicParsing="false" text="削除" />
-                  <Label layoutX="4.0" layoutY="187.0" text="路線駅名表示" />
-                  <RadioButton fx:id="tateBottom" layoutX="100.0" layoutY="160.0" mnemonicParsing="false" text="縦 - 下付き" textFill="DARKBLUE" />
-                  <RadioButton fx:id="yokoRight" layoutX="100.0" layoutY="210.0" mnemonicParsing="false" text="横 - 右付き" textFill="DARKGREEN" />
-                  <Label layoutX="20.0" layoutY="706.0" text="駅プロパティ" />
-                  <Label layoutX="9.0" layoutY="739.0" text="駅名表示" />
-                  <RadioButton fx:id="staTateBottom" layoutX="88.0" layoutY="725.0" mnemonicParsing="false" text="縦 - 下付き" textFill="DARKBLUE" />
-                  <RadioButton fx:id="staTateTop" layoutX="88.0" layoutY="750.0" mnemonicParsing="false" text="縦 - 上付き" textFill="DARKRED" />
-                  <RadioButton fx:id="staObeyLine" layoutX="88.0" layoutY="825.0" mnemonicParsing="false" text="路線準拠" />
-                  <Button fx:id="staRemoveRestr" layoutX="8.0" layoutY="982.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="97.0" text="座標固定解除" textFill="#ff0061" />
-                  <ColorPicker fx:id="RouteColor" layoutX="93.0" layoutY="262.0" prefHeight="27.0" prefWidth="93.0" />
-                  <Label layoutX="10.0" layoutY="267.0" text="駅名色" />
-                  <Label layoutX="9.0" layoutY="305.0" text="駅名大きさ" />
-                  <Spinner fx:id="RouteSize" layoutX="104.0" layoutY="300.0" prefHeight="27.0" prefWidth="83.0" />
-                  <Label layoutX="9.0" layoutY="334.0" text="駅名スタイル" />
-                  <ComboBox fx:id="RouteStyle" layoutX="22.0" layoutY="351.0" prefHeight="27.0" prefWidth="165.0" />
-                  <Label layoutX="11.0" layoutY="855.0" text="駅名大きさ" />
-                  <Spinner fx:id="staSize" layoutX="106.0" layoutY="850.0" prefHeight="27.0" prefWidth="83.0" />
-                  <Label layoutX="11.0" layoutY="917.0" text="駅名スタイル" />
-                  <ComboBox fx:id="staStyle" layoutX="24.0" layoutY="942.0" prefHeight="27.0" prefWidth="165.0" />
-                  <Label layoutX="24.0" layoutY="877.0" text="0を入力で路線の設定に準拠" textFill="#0090ff" />
-                  <Label layoutX="24.0" layoutY="894.0" text="-1を入力で駅名を非表示" textFill="#0090ff" />
-                  <Button fx:id="staDeConnect" layoutX="105.0" layoutY="982.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="97.0" text="駅の接続解除" textFill="#003aff" />
-                  <Label layoutX="5.0" layoutY="389.0" text="駅名フォント:" />
-                  <Button fx:id="stationFont" layoutX="22.0" layoutY="406.0" mnemonicParsing="false" text="フォントを設定" />
-                  <Label fx:id="currentFont" layoutX="93.0" layoutY="389.0" text="System" />
-                  <Label layoutX="8.0" layoutY="433.0" text="※フォント設定は全路線共通" />
-                  <RadioButton fx:id="staYokoRight" layoutX="88.0" layoutY="775.0" mnemonicParsing="false" text="横 - 右付き" textFill="DARKGREEN" />
-                  <RadioButton fx:id="staYokoLeft" layoutX="88.0" layoutY="800.0" mnemonicParsing="false" text="横 - 左付き" textFill="DARKSALMON" />
-                  <RadioButton fx:id="tateTop" layoutX="100.0" layoutY="185.0" mnemonicParsing="false" text="縦 - 上付き" textFill="DARKRED" />
-                  <RadioButton fx:id="yokoLeft" layoutX="100.0" layoutY="235.0" mnemonicParsing="false" text="横 - 左付き" textFill="DARKSALMON" />
+                  <Button fx:id="RouteAdd" layoutX="40.0" layoutY="44.0" mnemonicParsing="false" text="追加" />
+                  <Button fx:id="RouteDelete" layoutX="128.0" layoutY="44.0" mnemonicParsing="false" text="削除" />
+                  <Label layoutX="18.0" layoutY="489.0" text="駅一覧" />
+                  <Button fx:id="StationAdd" layoutX="76.0" layoutY="484.0" mnemonicParsing="false" text="追加" />
+                  <Button fx:id="StationDelete" layoutX="120.0" layoutY="484.0" mnemonicParsing="false" text="削除" />
+                  <Label layoutX="5.0" layoutY="209.0" text="路線駅名表示" />
+                  <RadioButton fx:id="tateBottom" layoutX="101.0" layoutY="182.0" mnemonicParsing="false" text="縦 - 下付き" textFill="DARKBLUE" />
+                  <RadioButton fx:id="yokoRight" layoutX="101.0" layoutY="232.0" mnemonicParsing="false" text="横 - 右付き" textFill="DARKGREEN" />
+                  <Label layoutX="21.0" layoutY="728.0" text="駅プロパティ" />
+                  <Label layoutX="10.0" layoutY="761.0" text="駅名表示" />
+                  <RadioButton fx:id="staTateBottom" layoutX="89.0" layoutY="747.0" mnemonicParsing="false" text="縦 - 下付き" textFill="DARKBLUE" />
+                  <RadioButton fx:id="staTateTop" layoutX="89.0" layoutY="772.0" mnemonicParsing="false" text="縦 - 上付き" textFill="DARKRED" />
+                  <RadioButton fx:id="staObeyLine" layoutX="89.0" layoutY="847.0" mnemonicParsing="false" text="路線準拠" />
+                  <Button fx:id="staRemoveRestr" layoutX="9.0" layoutY="1004.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="97.0" text="座標固定解除" textFill="#ff0061" />
+                  <ColorPicker fx:id="RouteColor" layoutX="94.0" layoutY="284.0" prefHeight="27.0" prefWidth="93.0" />
+                  <Label layoutX="11.0" layoutY="289.0" text="駅名色" />
+                  <Label layoutX="10.0" layoutY="327.0" text="駅名大きさ" />
+                  <Spinner fx:id="RouteSize" layoutX="105.0" layoutY="322.0" prefHeight="27.0" prefWidth="83.0" />
+                  <Label layoutX="10.0" layoutY="356.0" text="駅名スタイル" />
+                  <ComboBox fx:id="RouteStyle" layoutX="23.0" layoutY="373.0" prefHeight="27.0" prefWidth="165.0" />
+                  <Label layoutX="12.0" layoutY="877.0" text="駅名大きさ" />
+                  <Spinner fx:id="staSize" layoutX="107.0" layoutY="872.0" prefHeight="27.0" prefWidth="83.0" />
+                  <Label layoutX="12.0" layoutY="939.0" text="駅名スタイル" />
+                  <ComboBox fx:id="staStyle" layoutX="25.0" layoutY="964.0" prefHeight="27.0" prefWidth="165.0" />
+                  <Label layoutX="25.0" layoutY="899.0" text="0を入力で路線の設定に準拠" textFill="#0090ff" />
+                  <Label layoutX="25.0" layoutY="916.0" text="-1を入力で駅名を非表示" textFill="#0090ff" />
+                  <Button fx:id="staDeConnect" layoutX="106.0" layoutY="1004.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="97.0" text="駅の接続解除" textFill="#003aff" />
+                  <Label layoutX="6.0" layoutY="411.0" text="駅名フォント:" />
+                  <Button fx:id="stationFont" layoutX="23.0" layoutY="428.0" mnemonicParsing="false" text="フォントを設定" />
+                  <Label fx:id="currentFont" layoutX="94.0" layoutY="411.0" text="System" />
+                  <Label layoutX="9.0" layoutY="455.0" text="※フォント設定は全路線共通" />
+                  <RadioButton fx:id="staYokoRight" layoutX="89.0" layoutY="797.0" mnemonicParsing="false" text="横 - 右付き" textFill="DARKGREEN" />
+                  <RadioButton fx:id="staYokoLeft" layoutX="89.0" layoutY="822.0" mnemonicParsing="false" text="横 - 左付き" textFill="DARKSALMON" />
+                  <RadioButton fx:id="tateTop" layoutX="101.0" layoutY="207.0" mnemonicParsing="false" text="縦 - 上付き" textFill="DARKRED" />
+                  <RadioButton fx:id="yokoLeft" layoutX="101.0" layoutY="257.0" mnemonicParsing="false" text="横 - 左付き" textFill="DARKSALMON" />
+                  <Button fx:id="RouteLoad" layoutX="84.0" layoutY="44.0" mnemonicParsing="false" text="読込" />
                </children>
             </AnchorPane>
          </content>
