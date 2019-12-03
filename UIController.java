@@ -19,6 +19,8 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -26,6 +28,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -2533,24 +2537,23 @@ public class UIController implements Initializable{
 		Properties mainP = new Properties();
 		saveProp(mainP, images);
 		try{
-			/*結局ファイル書き出しになりました。
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(bos);
-			oos.writeObject(mainP);
-			byte[] mainPBytes = bos.toByteArray();
-			oos.close();
-			bos.close();
-			ZipEntry entry = new ZipEntry("main.ppb");
-			zos.putNextEntry(entry);
-			zos.write(mainPBytes, 0, mainPBytes.length);
-			zos.closeEntry();
-			*/
+			// propertiesファイルの出力を文字列でソートする
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			mainP.store(pw, null);
+			pw.flush();
+			List<String> prop_str = Arrays.asList(sw.toString().split("\n"));
+			Collections.sort(prop_str);
+			// ソートした文字列をファイルに書き出し
 			ArrayList<File> files = new ArrayList<File>();
 			File mainF = new File("main.properties");
-			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(mainF), "UTF-8");
-			mainP.store(osw, null);//書き出し
+			BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(new FileOutputStream(mainF), "UTF-8"));
+			for(String line: prop_str) {
+				bw.append(line);
+				bw.newLine();
+			}
 			files.add(mainF);
-			osw.close();
+			bw.close();
 			//画像の書き出し。
 			for(int i = 0; i < images.size(); i++){
 				File imF = new File(i + ".png");//番号+".png"
