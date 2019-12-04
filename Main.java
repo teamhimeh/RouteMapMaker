@@ -29,10 +29,14 @@ public class Main extends Application {
 			primaryStage.setTitle("路線図メーカー - main");
 			//primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("ro.png")));
 			primaryStage.setOnCloseRequest((WindowEvent t) ->{
+				if(!MainURManager.urManager.isSaveNeeded()) {
+					//保存は既に済んでいるので終了
+					System.exit(0);
+				}
 				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 				alert.setTitle("終了の確認");
 				alert.setHeaderText(null);
-				alert.setContentText("路線図メーカーを終了してよろしいですか？");
+				alert.setContentText("保存されていない変更があります．\n終了してよろしいですか？");
 				Optional<ButtonType> result = alert.showAndWait();
 				if(result.get() == ButtonType.OK){
 					System.exit(0);

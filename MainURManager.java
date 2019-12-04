@@ -9,8 +9,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
+//main画面でundo/redoをサポートするため独自命令に対応するクラス。
 public class MainURManager extends URElements {
-	//main画面でundo/redoをサポートするため独自命令に対応するクラス。
+	
+	public static MainURManager urManager = new MainURManager();
+	
 	private ObservableList<canUR> MainCommandList = FXCollections.observableArrayList();
 	
 	public void push(ObservableList<Station> staList, int staIndex, Station removedSta,
