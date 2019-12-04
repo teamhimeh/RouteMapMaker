@@ -16,6 +16,7 @@ public class Configuration {//ソフトウェアの環境設定を保持する�
 	private boolean R_bindToGridY = true;
 	private Color fixedColor = Color.CORNFLOWERBLUE;
 	private Color nonFixedColor = Color.BLACK;
+	private boolean triangleGrid = false;
 	
 	private boolean menubarMode = true;
 	
@@ -37,6 +38,8 @@ public class Configuration {//ソフトウェアの環境設定を保持する�
 	public void setMenubarMode(boolean b){this.menubarMode = b;}
 	public boolean getNoAlert(){return this.no_alert;}
 	public void setNoAlert(boolean b){this.no_alert = b;}
+	public boolean isGridTriangle() {return this.triangleGrid;}
+	public void setGridTriangle(boolean b) {this.triangleGrid = b;}
 	
 	public void read(){
 		File file = new File("config.properties");
@@ -59,6 +62,7 @@ public class Configuration {//ソフトウェアの環境設定を保持する�
 			nonFixedColor = Color.valueOf(p.getProperty("nonFixedColor",Color.BLACK.toString()));
 			menubarMode = Boolean.valueOf(p.getProperty("menubarMode", "true"));
 			no_alert = Boolean.valueOf(p.getProperty("no_alert", "false"));
+			triangleGrid = Boolean.valueOf(p.getProperty("triangleGrid", "false"));
 		}
 	}
 	public void save(){
@@ -72,6 +76,7 @@ public class Configuration {//ソフトウェアの環境設定を保持する�
 			p.setProperty("fixedColor", fixedColor.toString());
 			p.setProperty("nonFixedColor", nonFixedColor.toString());
 			p.setProperty("no_alert", String.valueOf(no_alert));
+			p.setProperty("triangleGrid", String.valueOf(triangleGrid));
 			FileWriter fw = new FileWriter("config.properties");
 			p.store(fw, null);
 			fw.close();

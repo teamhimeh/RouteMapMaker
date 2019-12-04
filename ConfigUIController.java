@@ -7,8 +7,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -24,6 +26,8 @@ public class ConfigUIController implements Initializable{
 	@FXML CheckBox menubarMode;
 	@FXML ColorPicker fixedColor;
 	@FXML ColorPicker nonFixedColor;
+	@FXML RadioButton gridTriangle;
+	@FXML RadioButton gridSquare;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -57,6 +61,18 @@ public class ConfigUIController implements Initializable{
 			config.setNonFixedColor(nonFixedColor.getValue());
 			uic.ReDraw();
 		});
+		
+		final ToggleGroup gridGroup = new ToggleGroup();
+		gridTriangle.setToggleGroup(gridGroup);
+		gridSquare.setToggleGroup(gridGroup);
+		gridTriangle.setOnAction((ActionEvent) ->{
+			config.setGridTriangle(true);
+			uic.ReDraw();
+		});
+		gridSquare.setOnAction((ActionEvent) ->{
+			config.setGridTriangle(false);
+			uic.ReDraw();
+		});
 	}
 	
 	public void setObject(Stage stage, Configuration config, UIController uic){
@@ -71,6 +87,7 @@ public class ConfigUIController implements Initializable{
 		fixedColor.setValue(config.getFixedColor());
 		nonFixedColor.setValue(config.getNonFixedColor());
 		menubarMode.setSelected(config.getMenubarMode());
+		(config.isGridTriangle() ? gridTriangle : gridSquare).setSelected(true);
 	}
 
 }
