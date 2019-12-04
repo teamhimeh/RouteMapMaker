@@ -57,6 +57,7 @@ public class URElements {//undo_redoのための情報を保持する。
 	protected BooleanProperty redoable = new SimpleBooleanProperty(false);//redoできるか否か
 	protected Type type;//サブクラスからの参照用。undo/redoStackから取り出した命令のtype
 	protected int index;//サブクラスからの参照用。undo/redoStackから取り出した命令のindex
+	protected int prevUndoStackSize = 0; //前回のセーブ時のUndoTypeStackのサイズ．終了の警告に使う
 	
 	public void addObserve(IntegerProperty... iops){//監視対象を追加する。
 		for(IntegerProperty iop: iops){
@@ -278,5 +279,15 @@ public class URElements {//undo_redoのための情報を保持する。
 		redoIndexStack = new ArrayDeque<Integer>();//Listの何番か(redo)
 		undoable.set(false);
 		redoable.set(false);
+		prevUndoStackSize = 0;
+	}
+	public void saveUndoStackSize() {
+		prevUndoStackSize = undoTypeStack.size();
+	}
+	public boolean isSaveNeeded() {
+		return undoTypeStack.size() != prevUndoStackSize;
+	}
+	public int getStackCount() {
+		return undoTypeStack.size();
 	}
 }

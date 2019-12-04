@@ -151,7 +151,7 @@ public class UIController implements Initializable{
 	private FreeItemsController fic;
 	private Stage fiStage;
 	private boolean fiWindowOpened = false;//freeItemウィンドウが既に開かれているかどうか
-	private MainURManager urManager = new MainURManager();
+	private MainURManager urManager = MainURManager.urManager;
 	private ObservableList<DoubleArrayWrapper> lineDashes = FXCollections.observableArrayList();//ライン点線パターンを記憶。
 	private Stage changeAllStage;
 	private boolean changeAllWindowOpened = false;
@@ -2564,6 +2564,7 @@ public class UIController implements Initializable{
 			for(File f: files){//一時ファイルを消していく
 				f.delete();
 			}
+			urManager.saveUndoStackSize(); //保存カウントを更新
 		}catch(IOException e){
 			e.printStackTrace();
 		}finally{
