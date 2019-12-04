@@ -1969,20 +1969,8 @@ public class UIController implements Initializable{
 		canvas.setWidth(canvasOriginal[0]);
 		canvas.setHeight(canvasOriginal[1]);
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
-		//グリッド設定が有効の場合まずグリッドを描画する。
-		if(config.getR_grid()){
-			int interval = config.getR_gridInterval();
-			gc.setStroke(Color.LAVENDER);
-			gc.setLineWidth(1);
-			for(int i = 0; i < canvas.getHeight();){//縦線
-				gc.strokeLine(0, i, canvas.getWidth(), i);
-				i = i + interval;
-			}
-			for(int i = 0; i < canvas.getWidth();){//横線
-				gc.strokeLine(i, 0, i, canvas.getHeight());
-				i = i + interval;
-			}
-		}
+		//まずグリッドを描画する。
+		drawGrid();
 		//各路線ごとに描画。
 		double[] startP = new double[2];//スタート座標
 		double[] endP = new double[2];//エンド座標
@@ -2029,6 +2017,47 @@ public class UIController implements Initializable{
 		}
 		gc.setFill(Color.BLACK);
 		textDraw(true);
+	}
+	
+	void drawGrid() {
+		// グリッド表示OFF→return
+		if(!config.getR_grid()) {
+			return;
+		}
+		final int interval = config.getR_gridInterval();
+		gc.setStroke(Color.LAVENDER);
+		gc.setLineWidth(1);
+		if(config.isGridTriangle()) {
+			// 三角形グリッド
+			// 水平線
+			int cnt = 0;
+			while(true) {
+				int y = (int) (cnt*interval*Math.sqrt(3)/2);
+				if(y>=canvas.getHeight()) {
+					break;
+				}
+				gc.strokeLine(0, y, canvas.getWidth(), y);
+				cnt++;
+			}
+			// 斜め 傾き正線
+			for(int x = 0; x < canvas.getWidth()+(int)(canvas.getHeight()/Math.sqrt(3)); x += interval) {
+				gc.strokeLine(x-canvas.getHeight()/Math.sqrt(3), canvas.getHeight(), x, 0);
+			}
+			// 斜め 傾き負線
+			for(int x = 0; x < canvas.getWidth()+(int)(canvas.getHeight()/Math.sqrt(3)); x += interval) {
+				gc.strokeLine(x-canvas.getHeight()/Math.sqrt(3), 0, x, canvas.getHeight());
+			}
+		} else {
+			// 四角形グリッド
+			for(int i = 0; i < canvas.getHeight();){//横線
+				gc.strokeLine(0, i, canvas.getWidth(), i);
+				i = i + interval;
+			}
+			for(int i = 0; i < canvas.getWidth();){//縦線
+				gc.strokeLine(i, 0, i, canvas.getHeight());
+				i = i + interval;
+			}
+		}
 	}
 	
 	void textDraw(boolean mode){//駅名描画メソッド。modeがtrueなら路線編集モード。falseなら運転経路編集モード。
