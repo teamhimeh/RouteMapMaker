@@ -823,18 +823,9 @@ public class UIController implements Initializable{
 			public void handle(MouseEvent e){
 				if(esGroup.getSelectedToggle() == rightEditButton){
 					if(movingSt != null){//特定の駅が選択されている時
-						double mouseX = e.getX();
-						double mouseY = e.getY();
-						if(config.getR_grid()){//グリッドが有効な場合
-							if(config.getR_bindToGridX()){//グリッドにバインドする設定だった場合は座標の補正を行う。
-								int interval = config.getR_gridInterval();
-								mouseX = Math.round(mouseX / interval) * interval;
-							}
-							if(config.getR_bindToGridY()){
-								int interval = config.getR_gridInterval();
-								mouseY = Math.round(mouseY / interval) * interval;
-							}
-						}
+						double[] gridedPos = getGridedPoint(e.getX(), e.getY());
+						double mouseX = gridedPos[0];
+						double mouseY = gridedPos[1];
 						for(MvSta ms: movingStList){
 							ms.sta.setPoint(ms.start[0] + mouseX - startCoor[0], ms.start[1] + mouseY - startCoor[1]);
 						}
@@ -845,7 +836,7 @@ public class UIController implements Initializable{
 							if(! ms.isSet || Math.abs(ms.start[0] - ms.sta.getPoint()[0]) > 0.5  || 
 									Math.abs(ms.start[1] - ms.sta.getPoint()[1]) > 0.5){
 								shouldBePushed = true;
-								System.out.println(ms.start[0]+","+ms.sta.getPoint()[0]+","+ms.start[1]+","+ms.sta.getPoint()[1]);
+								//System.out.println(ms.start[0]+","+ms.sta.getPoint()[0]+","+ms.start[1]+","+ms.sta.getPoint()[1]);
 								break;
 							}
 						}
@@ -1853,6 +1844,37 @@ public class UIController implements Initializable{
 		return null;
 	}
 	
+	double[] getGridedPoint(double org_x, double org_y) {
+		double[] pos = {org_x, org_y};
+		if(!config.getR_grid()) {
+			// グリッド非表示．グリッド補正の必要なし
+			return pos;
+		}
+		
+		int interval = config.getR_gridInterval();
+		if(config.isGridTriangle()) {
+			// 三角形グリッド．XとY個別の固定はサポートしない．
+			if(config.getR_bindToGridX()) {
+				//まずy座標を確定させる
+				double y_interval = interval * Math.sqrt(3) / 2;
+				int idx = (int) (Math.round(org_y / y_interval));
+				pos[1] = idx * y_interval;
+				//つづいてx座標を計算する．idxが偶数か奇数かで半interval分ずれる
+				double offset = (idx%2==1 ? interval/2.0 : 0);
+				pos[0] = Math.round((org_x - offset) / interval) * interval + offset;
+			}
+		} else {
+			//四角形グリッド
+			if(config.getR_bindToGridX()){//グリッドにバインドする設定だった場合は座標の補正を行う。
+				pos[0] = Math.round(org_x / interval) * interval;
+			}
+			if(config.getR_bindToGridY()){
+				pos[1] = Math.round(org_y / interval) * interval;
+			}
+		}
+		return pos;
+	}
+	
 	void newLinePointSet(Line l){//新しく追加された路線のとりあえずの描画位置を決める。
 		final double start = 50;
 		final double x_interval = 200;
@@ -2030,22 +2052,19 @@ public class UIController implements Initializable{
 		if(config.isGridTriangle()) {
 			// 三角形グリッド
 			// 水平線
-			int cnt = 0;
-			while(true) {
-				int y = (int) (cnt*interval*Math.sqrt(3)/2);
-				if(y>=canvas.getHeight()) {
-					break;
-				}
-				gc.strokeLine(0, y, canvas.getWidth(), y);
-				cnt++;
+			double y_interval = interval * Math.sqrt(3) / 2;
+			double h = canvas.getHeight();
+			for(int i = 0; i * y_interval < h; i++){//横線
+				gc.strokeLine(0, i * y_interval, canvas.getWidth(), i * y_interval);
+			}
+			int start_idx = (int) (Math.ceil(h/interval/Math.sqrt(3)));
+			// 斜め 傾き負線
+			for(double x = -1 * start_idx * interval; x < canvas.getWidth(); x += interval) {
+				gc.strokeLine(x, 0, x + h/Math.sqrt(3), h);
 			}
 			// 斜め 傾き正線
-			for(int x = 0; x < canvas.getWidth()+(int)(canvas.getHeight()/Math.sqrt(3)); x += interval) {
-				gc.strokeLine(x-canvas.getHeight()/Math.sqrt(3), canvas.getHeight(), x, 0);
-			}
-			// 斜め 傾き負線
-			for(int x = 0; x < canvas.getWidth()+(int)(canvas.getHeight()/Math.sqrt(3)); x += interval) {
-				gc.strokeLine(x-canvas.getHeight()/Math.sqrt(3), 0, x, canvas.getHeight());
+			for(double x = 0; x < canvas.getWidth() + h/Math.sqrt(3); x += interval) {
+				gc.strokeLine(x - h/Math.sqrt(3), h, x , 0);
 			}
 		} else {
 			// 四角形グリッド
