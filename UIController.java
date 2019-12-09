@@ -133,7 +133,7 @@ public class UIController implements Initializable{
 	private double y_largest = 0;
 	private double x_largest = 0;
 	private ToggleGroup esGroup;//どちらの編集モードかのToggleGroup
-	private final double pointRadious = 3;//駅の点の半径
+	private final double pointRadius = 3;//駅の点の半径
 	final double canvasMargin = 200;
 	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
 	private final double ReleaseVersion = 10.5;//リリースバージョン。ユーザーへの案内用
@@ -1996,7 +1996,7 @@ public class UIController implements Initializable{
 		//各路線ごとに描画。
 		double[] startP = new double[2];//スタート座標
 		double[] endP = new double[2];//エンド座標
-		double radius = pointRadious;//点の半径
+		double radius = pointRadius;//点の半径
 		gc.setFill(Color.BLACK);
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(2);
@@ -2506,7 +2506,7 @@ public class UIController implements Initializable{
 				}else{
 					p = lineList.get(i).getStations().get(j).getInterPoint();
 				}
-				if(Math.abs(x - p[0]) <= pointRadious && Math.abs(y - p[1]) <= pointRadious){
+				if(Math.abs(x - p[0]) <= pointRadius && Math.abs(y - p[1]) <= pointRadius){
 					st = lineList.get(i).getStations().get(j);
 					RouteTable.getSelectionModel().select(i);//選択処理をする
 					StationList.getSelectionModel().select(j);
