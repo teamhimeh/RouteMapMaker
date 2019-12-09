@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -260,7 +262,7 @@ public class UIController implements Initializable{
 		(new Thread(){
 			@Override
 			public void run(){
-				checkUpdate();
+				checkUpdate(true);
 			}
 		}).start();
 		config.read();
@@ -1017,7 +1019,7 @@ public class UIController implements Initializable{
 			}
 		});
 		mb_checkUpdate.setOnAction((ActionEvent) ->{
-			boolean b = checkUpdate();
+			boolean b = checkUpdate(false);
 			if(! b){
 				Alert alert = new Alert(AlertType.INFORMATION,"",ButtonType.CLOSE);
 				alert.getDialogPane().setContentText("このバージョンは最新版です。");
@@ -3262,9 +3264,12 @@ public class UIController implements Initializable{
 		expStage.setScene(new Scene(expBox));
 		expStage.showAndWait();
 	}
-	boolean checkUpdate(){//アップデートがあればtrue。なければfalse。このフラグは手動で確認が行われた時用。
+	boolean checkUpdate(boolean onLaunch){//アップデートがあればtrue。なければfalse。このフラグは手動で確認が行われた時用。
 		boolean nv = false;
 		URL url;
+		if(onLaunch) {
+			postUsage();
+		}
 		try {
 			url = new URL("https://spreadsheets.google.com/feeds/cells/1AzBe7Jdny2YnIW9hUixfbGBLmaj1xRGjEEl042fZ7kE/od6/public/values");
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -3315,6 +3320,9 @@ public class UIController implements Initializable{
 						alert.showAndWait();
 					});
 				}
+				else {
+					System.out.println("この本体は最新バージョンです．");
+				}
 			}else{
 				nv = true;
 				Platform.runLater(() ->{
@@ -3348,6 +3356,20 @@ public class UIController implements Initializable{
 		}
 		
 		return nv;
+	}
+	
+	void postUsage() {
+		try {
+			URL url = new URL("https://us-central1-routemapmaker-6c324.cloudfunctions.net/registerUsage?version="
+		+ ReleaseVersion + "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
+		+ "&locale=" + Locale.getDefault().getCountry());
+			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.connect();
+		} catch(IOException e) {
+			// usageの送信だけなので特にエラー処理はしない．
+			e.printStackTrace();
+		}
 	}
 
 	String[] analyzeXML(Document document){
