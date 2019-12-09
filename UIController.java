@@ -136,7 +136,7 @@ public class UIController implements Initializable{
 	private final double pointRadius = 3;//駅の点の半径
 	final double canvasMargin = 200;
 	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
-	private final double ReleaseVersion = 10.5;//リリースバージョン。ユーザーへの案内用
+	private final double ReleaseVersion = 11;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
 	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
@@ -272,7 +272,7 @@ public class UIController implements Initializable{
 			Text text = new Text("本ソフトウェアの使用にあたり以下の3つをお願いしています。\n"
 					+ "1.不具合によるデータの破損などに十分注意してください。\n"
 					+ "2.随時アップデートを配信しますのでアップデートを確認し、インストールしてください。\n"
-					+ "3.不具合を発見した時は開発者へバグ報告をしてください。（Twitter @teamhimeh にお願いします。）\n\n"
+					+ "3.不具合を発見した時は開発者へバグ報告をしてください。（Twitter @himeshi_hob にお願いします。）\n\n"
 					+ "開発者の情報、ライセンスなどはHelp→Aboutを参照してください。");
 			CheckBox box = new CheckBox("次からこのダイアログを表示しない");
 			VBox vbox = new VBox(10.0,text,box);
@@ -317,6 +317,7 @@ public class UIController implements Initializable{
 					}
 					br.close();
 					createNewLine(staNames);
+					lineDraw();
 				}
 			}catch(IOException e){
 				Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
@@ -325,8 +326,8 @@ public class UIController implements Initializable{
 			}catch(Exception e){
 				e.printStackTrace();
 				Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
-				alert.getDialogPane().setContentText("エラーが発生しました。データファイルに不備があります。\n"
-						+ "以下のエラーメッセージを@teamhimehにお知らせください。\n" + e.getLocalizedMessage());
+				alert.getDialogPane().setContentText("エラーが発生しました。\n"
+						+ "以下のエラーメッセージを@himeshi_hobにお知らせください。\n" + e.getLocalizedMessage());
 				alert.showAndWait();
 			}
 		});
@@ -948,7 +949,7 @@ public class UIController implements Initializable{
 				e.printStackTrace();
 				Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
 				alert.getDialogPane().setContentText("エラーが発生しました。データファイルに不備があります。\n"
-						+ "以下のエラーメッセージを@teamhimehにお知らせください。\n" + e.getLocalizedMessage());
+						+ "以下のエラーメッセージを@himeshi_hobにお知らせください。\n" + e.getLocalizedMessage());
 				alert.showAndWait();
 				dataFile = null;
 			}
@@ -997,10 +998,10 @@ public class UIController implements Initializable{
 		mb_about.setOnAction((ActionEvent) ->{
 			Alert alert = new Alert(AlertType.NONE,"",ButtonType.CLOSE);
 			alert.getDialogPane().setHeaderText("バージョン情報");
-			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2017年3月31日\n"
+			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2019年12月9日\n"
 					+ "使い方の参照、不具合報告等はwikiで行うことができます。\n"
 					+ "不具合を発見された際はwikiもしくはTwitterでの報告にご協力をお願いします。\n\n"
-					+ "お問い合わせ：@teamhimeH（Twitter）\n2017 teamhimeH \nCreativeCommons 表示-非営利4.0国際ライセンスに従います。"
+					+ "お問い合わせ：@himeshi_hob（Twitter）\n2017-2019 ひめし \nCreativeCommons 表示-非営利4.0国際ライセンスに従います。"
 					+ "ライセンスについては付属のReadMeを参照してください。");
 			alert.show();
 		});
@@ -1806,7 +1807,8 @@ public class UIController implements Initializable{
 			List<Station> newLineStations = staNames.stream().map(n -> new Station(n))
 					.collect(Collectors.toList());
 			// 重複駅名について問い合わせる
-			int dup_process = 0; // 0:問い合わせ 1:すべて統合　2:すべて不統合
+			// dup_process = 1は問い合わせダイアログを設けるまでの応急処置
+			int dup_process = 1; // 0:問い合わせ 1:すべて統合　2:すべて不統合
 			for(int i=0; i<newLineStations.size(); i++) {
 				final Station s = newLineStations.get(i);
 				final Station dup = findStaByName(s.getName());
@@ -2834,7 +2836,7 @@ public class UIController implements Initializable{
 							".NumOfStations") +"," +count);
 					Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
 					alert.getDialogPane().setContentText("データファイルに不備があります。読み込みは続行されます。\n"
-							+ "以下のエラーメッセージを@teamhimehにお知らせください。\n"
+							+ "以下のエラーメッセージを@himeshi_hobにお知らせください。\n"
 							+ "line"+i+"train"+h+"で指定された駅数が停車駅として追加されていません。");
 					alert.showAndWait();
 					//throw new IllegalArgumentException("line"+i+"train"+h+"で指定された駅数が停車駅として追加されていません。");
