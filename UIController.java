@@ -2496,26 +2496,29 @@ public class UIController implements Initializable{
 		}
 		
 	}
+	
 	Station searchStation(double x, double y){
-		Station st = null;
-		search: for(int i = 0; i < lineList.size(); i++){
-			for(int j = 0; j < lineList.get(i).getStations().size(); j++){
+		for(int i = 0; i < lineList.size(); i++) {
+			Line line = lineList.get(i);
+			for(int j = 0; j < line.getStations().size(); j++){
+				Station st = line.getStations().get(j);
 				double[] p;
-				if(lineList.get(i).getStations().get(j).isSet()){
-					p = lineList.get(i).getStations().get(j).getPoint();
+				if(st.isSet()){
+					p = st.getPoint();
 				}else{
-					p = lineList.get(i).getStations().get(j).getInterPoint();
+					p = st.getInterPoint();
 				}
-				if(Math.abs(x - p[0]) <= pointRadius && Math.abs(y - p[1]) <= pointRadius){
-					st = lineList.get(i).getStations().get(j);
+				double dist_square = Math.pow(x-p[0], 2) + Math.pow(y-p[1], 2);
+				if(dist_square <= Math.pow(6, 2)){
 					RouteTable.getSelectionModel().select(i);//選択処理をする
 					StationList.getSelectionModel().select(j);
-					break search;
+					return st;
 				}
 			}
 		}
-		return st;
+		return null;
 	}
+	
 	ObservableList<MvSta> searchStation(double x, double y, double w, double h){
 		//ドラッグで生成された四角形の中に存在する駅をリストで返す。座標固定駅のみ。
 		ObservableList<MvSta> staList = FXCollections.observableArrayList();
