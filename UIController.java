@@ -158,6 +158,7 @@ public class UIController implements Initializable{
 	private Stage changeAllStage;
 	private boolean changeAllWindowOpened = false;
 	private boolean shortCutKeyPressed = false;//コマンドorCtrlキーが押されてるか否か
+	private boolean isLoading = false; //読み込み処理でUIのlistenerが反応するため，それの処理
 	
 	@FXML AnchorPane leftPane;
 	@FXML AnchorPane rightPane;
@@ -1502,6 +1503,9 @@ public class UIController implements Initializable{
 		re_linePattern_CB.setButtonCell(ldCell.call(null));
 		re_linePattern_CB.getSelectionModel().select(0);
 		re_linePattern_CB.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(isLoading) {
+				return;
+			}
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
 			int indexR = R_RouteTable.getSelectionModel().getSelectedIndex();
 			if(indexK != -1 && indexR != -1){
@@ -2650,6 +2654,9 @@ public class UIController implements Initializable{
 			alert.showAndWait();
 			//return;
 		}
+		
+		isLoading = true;
+		
 		double[] bgc = new double[4];
 		bgc[0] = Double.parseDouble(p.getProperty("bgColorR"));
 		bgc[1] = Double.parseDouble(p.getProperty("bgColorG"));
@@ -2898,6 +2905,7 @@ public class UIController implements Initializable{
 		canvas.setHeight(y_largest + canvasMargin);
 		resetParams();//適切にGUIパラメータを再セット。
 		rightEditButton.setSelected(true);//読み込み時は路線編集モードにする。
+		isLoading = false;
 		lineDraw();
 	}
 	void saveProp(Properties p, ArrayList<Image> images) throws IOException{//データの保存を行う。
