@@ -922,7 +922,7 @@ public class UIController implements Initializable{
 		});
 		mb_open.setOnAction((ActionEvent) ->{
 			FileChooser fc = new FileChooser();
-			FileChooser.ExtensionFilter erm = new FileChooser.ExtensionFilter("簡易路線図メーカー形式（*.erm）", "*.erm");
+			FileChooser.ExtensionFilter erm = new FileChooser.ExtensionFilter("路線図メーカーテキスト形式（*.erm）", "*.erm");
 			FileChooser.ExtensionFilter rmm = new FileChooser.ExtensionFilter("路線図メーカー形式（*.rmm）", "*.rmm");
 			fc.setTitle("ファイルを開く");
 			fc.getExtensionFilters().add(rmm);
@@ -931,12 +931,8 @@ public class UIController implements Initializable{
 			try{
 				if(fc.getSelectedExtensionFilter() == erm){
 					urManager.clear();
-					dataFile = null;
-					InputStreamReader isr = new InputStreamReader(new FileInputStream(selectedFile), "UTF-8");
-					Properties p = new Properties();
-					p.load(isr);
-					isr.close();
-					readProp(p,null);
+					dataFile = selectedFile;
+					readERMFile(dataFile);
 				}
 				if(fc.getSelectedExtensionFilter() == rmm){
 					urManager.clear();
@@ -962,6 +958,7 @@ public class UIController implements Initializable{
 				FileChooser fc = new FileChooser();
 				fc.setTitle("ファイルの保存");
 				fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("路線図メーカー形式（*.rmm）", "*.rmm"));
+				fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("路線図メーカーテキスト形式（*.erm）", "*.erm"));
 				dataFile = fc.showSaveDialog(null);
 			}
 			if(dataFile != null){
@@ -981,6 +978,7 @@ public class UIController implements Initializable{
 			FileChooser fc = new FileChooser();
 			fc.setTitle("ファイルの保存");
 			fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("路線図メーカー形式（*.rmm）", "*.rmm"));
+			fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("路線図メーカーテキスト形式（*.erm）", "*.erm"));
 			dataFile = fc.showSaveDialog(null);
 			if(dataFile != null){
 				try{
@@ -2546,6 +2544,25 @@ public class UIController implements Initializable{
 		}
 		return staList;
 	}
+	
+	void readERMFile(File file) throws IOException {
+		// propertiesの読み込み
+		InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
+		Properties p = new Properties();
+		p.load(isr);
+		isr.close();
+		// 画像の読み込み．同ディレクトリの全pngを対象にする．
+		HashMap<Integer,Image> imageMap = new HashMap<Integer,Image>();
+		for(File f: new File(file.getParent()).listFiles()) {
+			System.out.println(f.getParent() + " -> " + f.getName());
+			if(f.getName().substring(f.getName().lastIndexOf(".")).equals(".png")) {
+				System.out.println("read.");
+				readImage(f, imageMap);
+			}
+		}
+		readProp(p,imageMap);
+	}
+	
 	void readRMMFile(File file) throws IOException{
 		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(file)),
 				Charset.forName("UTF-8"));
@@ -2579,8 +2596,7 @@ public class UIController implements Initializable{
 				}
 				os.close();
 				zis.closeEntry();
-				Image im = SwingFXUtils.toFXImage(ImageIO.read(imageFile), null);
-				imageMap.put(Integer.valueOf(entry.getName().substring(0, entry.getName().indexOf("."))), im);
+				readImage(imageFile, imageMap);
 				imageFile.delete();
 			}
 		}
@@ -2589,7 +2605,21 @@ public class UIController implements Initializable{
 		mainFile.delete();
 		zis.close();
 	}
-	void saveRMMFile(File zipFile) throws IOException{
+	
+	//png画像を読みこんでimageMapに格納する
+	void readImage(File imageFile, HashMap<Integer,Image> imageMap) throws IOException {
+		try {
+			int idx = Integer.valueOf(imageFile.getName().substring(0, imageFile.getName().indexOf(".")));
+			Image im = SwingFXUtils.toFXImage(ImageIO.read(imageFile), null);
+			imageMap.put(idx, im);
+		}catch(NumberFormatException e) {
+			// ファイル名が数字でない場合は読み込み処理を行わない．
+		}
+	}
+	
+	void saveRMMFile(File saveFile) throws IOException{
+		final String fN = saveFile.getName();
+		final boolean rmm = (fN.substring(fN.lastIndexOf(".")).equals(".rmm"));
 		ArrayList<Image> images = new ArrayList<Image>();//書き出す画像を全部ここにストック。
 		//画像はimagesのindex番号のみで識別する。propertiesも番号だけ。
 		//mainの書き出し
@@ -2605,7 +2635,7 @@ public class UIController implements Initializable{
 			Collections.sort(prop_str);
 			// ソートした文字列をファイルに書き出し
 			ArrayList<File> files = new ArrayList<File>();
-			File mainF = new File("main.properties");
+			File mainF = rmm ? new File("main.properties") : saveFile; // ermの場合はsaveFileに書き込む
 			BufferedWriter bw = new BufferedWriter (new OutputStreamWriter(new FileOutputStream(mainF), "UTF-8"));
 			for(String line: prop_str) {
 				bw.append(line);
@@ -2614,14 +2644,17 @@ public class UIController implements Initializable{
 			files.add(mainF);
 			bw.close();
 			//画像の書き出し。
+			String fileDir = rmm ? "" : saveFile.getParent() + "/";
 			for(int i = 0; i < images.size(); i++){
-				File imF = new File(i + ".png");//番号+".png"
+				File imF = new File(fileDir + i + ".png");//番号+".png"
 				ImageIO.write(SwingFXUtils.fromFXImage(images.get(i), null), "png", imF);
 				files.add(imF);
 			}
-			HandleZip.writeZip(zipFile, files);
-			for(File f: files){//一時ファイルを消していく
-				f.delete();
+			if(rmm) {
+				HandleZip.writeZip(saveFile, files);
+				for(File f: files){//一時ファイルを消していく
+					f.delete();
+				}
 			}
 			urManager.saveUndoStackSize(); //保存カウントを更新
 		}catch(IOException e){
@@ -2700,12 +2733,20 @@ public class UIController implements Initializable{
 					freeItems.add(fi);
 				}
 				if(type == FreeItem.IMAGE){
+					int img_idx = Integer.valueOf(p.getProperty("FreeItem" + i + ".image"));
+					Image img = imageMap.get(img_idx);
+					if(img==null) {
+						Alert alert = new Alert(AlertType.ERROR,"",ButtonType.CLOSE);
+						alert.getDialogPane().setContentText("画像ファイル " + img_idx + ".png が見つかりません．");
+						alert.showAndWait();
+						continue;
+					}
 					FreeItem fi = new FreeItem(type);
 					fi.setText(p.getProperty("FreeItem" + i + ".text"));
 					for(int h = 0; h < 5; h++){
 						fi.getParams()[h].set(Double.parseDouble(p.getProperty("FreeItem" + i + ".params" + h)));
 					}
-					fi.setImage(imageMap.get(Integer.valueOf(p.getProperty("FreeItem" + i + ".image"))));
+					fi.setImage(img);
 					freeItems.add(fi);
 				}
 			}
