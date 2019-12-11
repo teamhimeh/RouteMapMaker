@@ -179,6 +179,7 @@ public class UIController implements Initializable{
 	@FXML Button RRT_UP;
 	@FXML Button RRT_DOWN;
 	@FXML Canvas canvas;
+	@FXML CheckBox staCurveConnection;
 	@FXML ColorPicker re_bg_CP;
 	@FXML ColorPicker re_line_CP;
 	@FXML ColorPicker re_mark_CP;
@@ -652,6 +653,22 @@ public class UIController implements Initializable{
 				lineDraw();
 			}
 		});
+		staCurveConnection.setOnAction((ActionEvent)->{
+			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+			int indexS = StationList.getSelectionModel().getSelectedIndex();
+			Station sta = lineList.get(indexR).getStations().get(indexS);
+			ObservableList<Integer> ci = lineList.get(indexR).getCurveIdxs();
+			if(staCurveConnection.isSelected()) {
+				//idxを追加する
+				ci.add(indexS);
+				//urManager.push(line.getStations(), URElements.ArrayCommands.ADD, ci.size()-1, Integer(indexS));
+			} else {
+				//idxを削除する
+				int idx = ci.indexOf(indexS);
+				ci.remove(idx);
+				//urManager.push(line.getStations(), URElements.ArrayCommands.REMOVE, idx, indexS);
+			}
+		});
 		staRemoveRestr.setOnAction((ActionEvent)->{
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 			int indexS = StationList.getSelectionModel().getSelectedIndex();
@@ -740,6 +757,8 @@ public class UIController implements Initializable{
 						if(s.getMuki() == Station.TEXT_UNSET) staMukiGroup.selectToggle(staObeyLine);
 						staSize.getValueFactory().setValue(s.getNameSize());
 						staStyle.getSelectionModel().select(s.getNameStyle());
+						staCurveConnection.setDisable(!lineList.get(indexR).isCurvable(indexS));
+						staCurveConnection.setSelected(lineList.get(indexR).getCurveConnection(indexS));
 					}
 				});
 		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。
@@ -1787,6 +1806,11 @@ public class UIController implements Initializable{
 		});
 	}
 	
+	private Object Integer(int indexS) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	// 路線を作成し，作成されたLineを返す
 	Line createNewLine(ArrayList<String> staNames) {
 		Line newLine = new Line("路線" + (lineList.size()+1));
@@ -2009,9 +2033,11 @@ public class UIController implements Initializable{
 		for(int i=0; i < lineList.size(); i++){
 			//まずは始点での処理。
 			startP = lineList.get(i).getStations().get(0).getPoint();
-			//gc.fillOval(startP[0] - radius, startP[1] - radius, radius * 2, radius * 2);//始点
 			int stopIndex = 0;
 			for(int i2 = 1; i2 < lineList.get(i).getStations().size(); i2++){
+				if(!lineList.get(i).getStations().get(i2).isSet()) {
+					continue;
+				}
 				if(lineList.get(i).getStations().get(i2).isSet()){//isSetがtrueの時のみ。
 					endP = lineList.get(i).getStations().get(i2).getPoint();
 					gc.strokeLine(startP[0], startP[1], endP[0], endP[1]);
@@ -2032,13 +2058,17 @@ public class UIController implements Initializable{
 		//駅の点の描画
 		for(Line l: lineList){
 			for(Station sta: l.getStations()){
-				if(sta.isSet()) gc.setFill(config.getFixedColor());
-				if(! sta.isSet()) gc.setFill(config.getNonFixedColor());
 				boolean contain = false;
 				for(MvSta ms: movingStList){
 					if(ms.sta == sta) contain = true;
 				}
-				if(contain) gc.setFill(Color.RED);
+				if(contain) { // 選択中
+					gc.setFill(Color.RED);
+				} else if(sta.isSet()) { //座標固定されている
+					gc.setFill(config.getFixedColor());
+				} else { //座標固定されていない
+					gc.setFill(config.getNonFixedColor());
+				}
 				double[] p = sta.getPointUS();
 				gc.fillOval(p[0] - radius, p[1] - radius, radius * 2, radius * 2);
 			}

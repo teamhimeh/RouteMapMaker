@@ -25,6 +25,7 @@ public class Line {//路線の情報を保持するクラス。
 	
 	private ObservableList<Station> stations;//駅名を保持する。順番は大事。
 	private ObservableList<Train> trains;//運転系統を保持する。
+	private ObservableList<Integer> curveIdxs; //楕円曲線で線をつなぐ駅のidxを記録する
 	private StringProperty lineName = new SimpleStringProperty();//路線名
 	private BooleanProperty tategaki = new SimpleBooleanProperty(false);//縦書きか横書きか。trueなら縦書き
 	private IntegerProperty nameStyle = new SimpleIntegerProperty(REGULAR);
@@ -35,8 +36,9 @@ public class Line {//路線の情報を保持するクラス。
 	private IntegerProperty NameY = new SimpleIntegerProperty(0);
 	
 	public Line(String name){//コンストラクタ
-		stations = FXCollections.observableArrayList();;
-		trains = FXCollections.observableArrayList();;
+		stations = FXCollections.observableArrayList();
+		trains = FXCollections.observableArrayList();
+		curveIdxs = FXCollections.observableArrayList();
 		setName(name);
 		//始点と終点は確保しておく
 		stations.add(new Station(name + "始点"));
@@ -125,5 +127,15 @@ public class Line {//路線の情報を保持するクラス。
 	}
 	public void setTrains(ObservableList<Train> t){
 		trains = t;
+	}
+	public ObservableList<Integer> getCurveIdxs() {
+		return curveIdxs;
+	}
+	public boolean isCurvable(int idx) {
+		return idx!=0 && stations.size()-idx>2 && //端条件
+				!curveIdxs.contains(idx-1) && !curveIdxs.contains(idx+1); //隣条件
+	}
+	public boolean getCurveConnection(int idx) {
+		return curveIdxs.contains(idx);
 	}
 }
