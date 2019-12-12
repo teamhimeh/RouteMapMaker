@@ -2030,25 +2030,29 @@ public class UIController implements Initializable{
 		gc.setFill(Color.BLACK);
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(2);
-		for(int i=0; i < lineList.size(); i++){
+		for(Line line: lineList){
 			//まずは始点での処理。
-			startP = lineList.get(i).getStations().get(0).getPoint();
+			startP = line.getStations().get(0).getPoint();
 			int stopIndex = 0;
-			for(int i2 = 1; i2 < lineList.get(i).getStations().size(); i2++){
-				if(!lineList.get(i).getStations().get(i2).isSet()) {
+			for(int i2 = 1; i2 < line.getStations().size(); i2++){
+				// 座標非固定点はスキップ
+				if(!line.getStations().get(i2).isSet()) {
 					continue;
 				}
-				if(lineList.get(i).getStations().get(i2).isSet()){//isSetがtrueの時のみ。
-					endP = lineList.get(i).getStations().get(i2).getPoint();
+				if(line.getCurveConnection(i2)) {
+					// ベジエ曲線での接続
+					
+				} else {
+					// 直線での接続
+					endP = line.getStations().get(i2).getPoint();
 					gc.strokeLine(startP[0], startP[1], endP[0], endP[1]);
 					for(int i3 = stopIndex + 1; i3 <= i2; i3++){
 						double[] p = new double[2];
 						p[0] = startP[0] + (endP[0] - startP[0]) * (i3 - stopIndex) / (i2 - stopIndex);
 						p[1] = startP[1] + (endP[1] - startP[1]) * (i3 - stopIndex) / (i2 - stopIndex);
 						if(i3 != i2){
-							lineList.get(i).getStations().get(i3).setInterPoint(p[0], p[1]);//中間座標の登録
+							line.getStations().get(i3).setInterPoint(p[0], p[1]);//中間座標の登録
 						}
-						//gc.fillOval(p[0] - radius, p[1] - radius, radius * 2, radius * 2);
 					}
 					stopIndex = i2;
 					startP = endP;
@@ -2235,6 +2239,39 @@ public class UIController implements Initializable{
 		gc.fillText(tate.toString(), p[0] - size / 2 + shift[0], p[1] + shift[1]);//Y座標の設定は要検証
 	}
 	
+	// 線分aと線分bの（延長）交点を求める．aとbが平行で交点がない場合はa[1]を用いる．
+	// a, bはそれぞれ線分の両端座標
+	double[] calcIntersection(double[][] a, double[][]b) {
+		double[] intr = new double[2];
+		if(Math.abs(a[1][0] - a[0][0]) < EPSILON){//aが縦線。y=Constの形
+			intr[0] = a[1][0];//x座標は決まりました。
+			if(Math.abs(b[1][0] - b[0][0]) < EPSILON){//zhBも縦線
+				intr[1] = a[1][1];
+			}else{
+				double tangent = (b[1][1] - b[0][1]) / (b[1][0] - b[0][0]);
+				double intercept = b[0][1] - b[0][0] * tangent;
+				intr[1] = tangent * intr[0] + intercept;
+			}
+		}else if(Math.abs(b[1][0] - b[0][0]) < EPSILON){//bが縦線。
+			intr[0] = b[0][0];//x座標は決まりました。
+			double tangent = (a[1][1] - a[0][1]) / (a[1][0] - a[0][0]);
+			double intercept = a[0][1] - a[0][0] * tangent;
+			intr[1] = tangent * intr[0] + intercept;
+		}else{//両方共縦線じゃない
+			double tangentA = (a[1][1] - a[0][1]) / (a[1][0] - a[0][0]);
+			double tangentB = (b[1][1] - b[0][1]) / (b[1][0] - b[0][0]);
+			double interceptA = a[1][1] - a[1][0] * tangentA;
+			double interceptB = b[0][1] - b[0][0] * tangentB;
+			if(Math.abs(tangentA - tangentB) < EPSILON){//２つの直線が一直線上にある。解が無数に存在してしまう場合
+				intr = a[1].clone();//計算する意味がないのでそのまんまshiftされた値を使うだけ
+			}else{
+				intr[0] = (interceptB - interceptA) / (tangentB - tangentA) * -1;
+				intr[1] = tangentA * intr[0] + interceptA;
+			}
+		}
+		return intr;
+	}
+	
 	void mapDraw(){//leftEdit状態の時はこちらが描画される。
 		gc.restore();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
@@ -2246,33 +2283,23 @@ public class UIController implements Initializable{
 		gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
 		for(int k = lineList.size() - 1; 0 <= k; k--){//路線ごとに処理
 			for(int i = lineList.get(k).getTrains().size() - 1; 0 <= i; i--){//系統ごとに処理。降順に処理していく。
-				if(lineList.get(k).getTrains().get(i).getStops().size() >= 2){//0駅もしくは1駅しか登録されてない系統は無視
+				Train train = lineList.get(k).getTrains().get(i);
+				if(train.getStops().size() >= 2){//0駅もしくは1駅しか登録されてない系統は無視
 					//線の描画処理
-					gc.setStroke(lineList.get(k).getTrains().get(i).getLineColor());
-					gc.setLineWidth(lineList.get(k).getTrains().get(i).getLineWidth());
-					gc.setLineDashes(lineList.get(k).getTrains().get(i).getLineDash().get());
-					gc.setFill(lineList.get(k).getTrains().get(i).getMarkColor());
-					int zure = lineList.get(k).getTrains().get(i).getLineDistance();
-					int mark_Size = lineList.get(k).getTrains().get(i).getMarkSize();
-					int startPoint = 0;//その系統が路線全部を含んでいるとは限らないので始まりの点
-					int endPoint = 0;//その系統が路線全部を含んでいるとは限らないので終わりの点
-					int lastIndex = lineList.get(k).getTrains().get(i).getStops().size() - 1;
+					gc.setStroke(train.getLineColor());
+					gc.setLineWidth(train.getLineWidth());
+					gc.setLineDashes(train.getLineDash().get());
+					gc.setFill(train.getMarkColor());
+					int zure = train.getLineDistance();
+					int mark_Size = train.getMarkSize();
+					List<String> lineStationNames = lineList.get(k).getStations().stream()
+							.map(sta -> sta.getName()).collect(Collectors.toList()); // 路線の駅名リスト
+					int lastIndex = train.getStops().size() - 1;
+					//路線における系統の始点の番号
+					int startPoint = lineStationNames.indexOf(train.getStops().get(0).getSta().getName());
+					//路線における系統の終点の番号
+					int endPoint = lineStationNames.lastIndexOf(train.getStops().get(lastIndex).getSta().getName());
 					int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
-					//startPointとendPointを決定
-					for(int a = 0; a < lineList.get(k).getStations().size(); a++){//startPointは昇順
-						if(lineList.get(k).getTrains().get(i).getStops().get(0).getSta().getName().equals
-								(lineList.get(k).getStations().get(a).getName())){
-							startPoint = a;
-							break;
-						}
-					}
-					for(int a = lineList.get(k).getStations().size() - 1; 0 <= a; a--){//endPointは降順
-						if(lineList.get(k).getTrains().get(i).getStops().get(lastIndex).getSta().getName().equals
-								(lineList.get(k).getStations().get(a).getName())){
-							endPoint = a;
-							break;
-						}
-					}
 					double[] start = new double[2];
 					double[] end = new double[2];
 					//まずはedgeAを考えましょう。
@@ -2297,40 +2324,10 @@ public class UIController implements Initializable{
 									lineList.get(k).getStations().get(h+1).getPoint(), zure);
 							double[][] zhB = shiftPoint(lineList.get(k).getStations().get(h+1).getPoint(),
 									lineList.get(k).getStations().get(h+2).getPointUS(), zure);
-							if(Math.abs(zhA[1][0] - zhA[0][0]) < EPSILON){//zhAが縦線。y=Constの形
-								double[] da = new double[2];
-								da[0] = zhA[1][0];//x座標は決まりました。
-								if(Math.abs(zhB[1][0] - zhB[0][0]) < EPSILON){//zhBも縦線
-									da[1] = zhA[1][1];
-								}else{
-									double tangent = (zhB[1][1] - zhB[0][1]) / (zhB[1][0] - zhB[0][0]);
-									double intercept = zhB[0][1] - zhB[0][0] * tangent;
-									da[1] = tangent * da[0] + intercept;
-								}
-								end = da;
-							}else if(Math.abs(zhB[1][0] - zhB[0][0]) < EPSILON){//zhBが縦線。
-								double[] da = new double[2];
-								da[0] = zhB[0][0];//x座標は決まりました。
-								double tangent = (zhA[1][1] - zhA[0][1]) / (zhA[1][0] - zhA[0][0]);
-								double intercept = zhA[0][1] - zhA[0][0] * tangent;
-								da[1] = tangent * da[0] + intercept;
-								end=da;
-							}else{//両方共縦線じゃない
-								double tangentA = (zhA[1][1] - zhA[0][1]) / (zhA[1][0] - zhA[0][0]);
-								double tangentB = (zhB[1][1] - zhB[0][1]) / (zhB[1][0] - zhB[0][0]);
-								double interceptA = zhA[1][1] - zhA[1][0] * tangentA;
-								double interceptB = zhB[0][1] - zhB[0][0] * tangentB;
-								if(Math.abs(tangentA - tangentB) < EPSILON){//２つの直線が一直線上にある。解が無数に存在してしまう場合
-									end = zhA[1].clone();//計算する意味がないのでそのまんまshiftされた値を使うだけ
-								}else{
-									end[0] = (interceptB - interceptA) / (tangentB - tangentA) * -1;
-									end[1] = tangentA * end[0] + interceptA;
-								}
-							}
+							end = calcIntersection(zhA, zhB);
 							//駅毎位置補正を加える。
-							if(lineList.get(k).getStations().get(h+1) == lineList.get(k).getTrains().get(i).getStops().
-									get(stopCount).getSta()){
-								staShift = lineList.get(k).getTrains().get(i).getStops().get(stopCount).getShift();
+							if(lineList.get(k).getStations().get(h+1) == train.getStops().get(stopCount).getSta()){
+								staShift = train.getStops().get(stopCount).getShift();
 								end[0] = end[0] + staShift[0];
 								end[1] = end[1] + staShift[1];
 								stopCount ++;//最後にstopcountを一つ上げる。
