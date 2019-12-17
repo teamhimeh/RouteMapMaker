@@ -16,7 +16,7 @@ public class MainURManager extends URElements {
 	
 	private ObservableList<canUR> MainCommandList = FXCollections.observableArrayList();
 	
-	public void push(ObservableList<Station> staList, int staIndex, Station removedSta,
+	public void push(ObservableList<Line.Connection> staList, int staIndex, Line.Connection removedCon,
 			ObservableList<Train> trains, ArrayList<Integer[]> removeList, ObservableList<TrainStop> stopValue){//DELETE_LINE
 		undoTypeStack.push(Type.SUBCLASS);
 		undoIndexStack.push(MainCommandList.size());
@@ -25,7 +25,7 @@ public class MainURManager extends URElements {
 		Station_Delete sd = new Station_Delete();
 		sd.staList = staList;
 		sd.staIndex = staIndex;
-		sd.removedSta = removedSta;
+		sd.removedCon = removedCon;
 		sd.trains = trains;
 		sd.removeList = removeList;
 		sd.stopValue = stopValue;
@@ -95,13 +95,13 @@ public class MainURManager extends URElements {
 		undoable.set(true);
 		redoable.set(false);
 	}
-	public void push(ObservableList<Line> lineList, ArrayList<Integer[]> replaceIndex, Station prevSta,
+	public void push(Line.Connection connection, Station prevSta,
 			Station replacing, boolean fixed){
 		undoTypeStack.push(Type.SUBCLASS);
 		undoIndexStack.push(MainCommandList.size());
 		redoTypeStack.clear();
 		redoIndexStack.clear();
-		integrateSta is = new integrateSta(lineList, replaceIndex, prevSta, replacing, fixed);
+		integrateSta is = new integrateSta(connection, prevSta, replacing, fixed);
 		MainCommandList.add(is);
 		undoable.set(true);
 		redoable.set(false);
@@ -126,16 +126,15 @@ public class MainURManager extends URElements {
 	}
 	//以下、各命令を保持する内部クラス群
 	public class Station_Delete implements canUR{
-		ObservableList<Station> staList;
+		ObservableList<Line.Connection> staList;
 		int staIndex;
-		Station removedSta;
+		Line.Connection removedCon;
 		ObservableList<Train> trains;
 		ArrayList<Integer[]> removeList;
 		ObservableList<TrainStop> stopValue;
 		@Override
 		public void undo() {
-			// TODO Auto-generated method stub
-			staList.add(staIndex, removedSta);//駅自体の復元
+			staList.add(staIndex, removedCon);//接続自体の復元
 			//一緒に削除された停車駅の復元
 			for(int i = 0; i < removeList.size(); i++){
 				Integer[] removeIndex = removeList.get(i);
@@ -318,34 +317,26 @@ public class MainURManager extends URElements {
 		}
 	}
 	public class integrateSta implements canUR{
-		ObservableList<Line> lineList;
-		ArrayList<Integer[]> replaceIndex;
+		Line.Connection connection; //置き換える駅のConnection
 		Station prevSta;//置き換え前
 		Station replacing;//置き換え後
 		boolean fixed;//以前座標固定点だったか否か
-		integrateSta(ObservableList<Line> lineList, ArrayList<Integer[]> replaceIndex, Station prevSta,
-				Station replacing, boolean fixed){
-			this.lineList = lineList;
-			this.replaceIndex = replaceIndex;
+		integrateSta(Line.Connection con, Station prevSta, Station replacing, boolean fixed){
+			this.connection = con;
 			this.prevSta = prevSta;
 			this.replacing = replacing;
 			this.fixed = fixed;
 		}
 		@Override
 		public void undo() {
-			// TODO Auto-generated method stub
-			for(Integer[] index: replaceIndex){
-				lineList.get(index[0].intValue()).getStations().set(index[1].intValue(), prevSta);
-			}
-			if(! fixed) replacing.erasePoint();//座標非固定点ならば非固定にする。
+			connection.station = prevSta;
+			if(!fixed) replacing.erasePoint();//座標非固定点ならば非固定にする。
 		}
 		@Override
 		public void redo() {
 			// TODO Auto-generated method stub
-			if(! fixed) replacing.setPoint(replacing.getInterPoint()[0], replacing.getInterPoint()[1]);
-			for(Integer[] index: replaceIndex){
-				lineList.get(index[0].intValue()).getStations().set(index[1].intValue(),replacing);
-			}
+			if(!fixed) replacing.setPoint(replacing.getInterPoint()[0], replacing.getInterPoint()[1]);
+			connection.station = replacing;
 		}
 	}
 }

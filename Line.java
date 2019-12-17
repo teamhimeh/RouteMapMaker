@@ -1,7 +1,5 @@
 package RouteMapMaker;
 
-import java.util.ArrayList;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -23,9 +21,21 @@ public class Line {//路線の情報を保持するクラス。
 	public static final int TOP = 2;
 	public static final int BOTTOM = 3;
 	
-	private ObservableList<Station> stations;//駅名を保持する。順番は大事。
+	class Connection {
+		Station station;
+		BooleanProperty curve;
+		Connection(Station s, boolean c) {
+			station = s;
+			curve = new SimpleBooleanProperty(c);
+		}
+		Connection(Station s) {
+			station = s;
+			curve = new SimpleBooleanProperty(false);
+		}
+	};
+	
+	private ObservableList<Connection> connections; //<駅，曲線接続> で駅同士の接続を保持．
 	private ObservableList<Train> trains;//運転系統を保持する。
-	private ObservableList<Integer> curveIdxs; //楕円曲線で線をつなぐ駅のidxを記録する
 	private StringProperty lineName = new SimpleStringProperty();//路線名
 	private BooleanProperty tategaki = new SimpleBooleanProperty(false);//縦書きか横書きか。trueなら縦書き
 	private IntegerProperty nameStyle = new SimpleIntegerProperty(REGULAR);
@@ -36,13 +46,12 @@ public class Line {//路線の情報を保持するクラス。
 	private IntegerProperty NameY = new SimpleIntegerProperty(0);
 	
 	public Line(String name){//コンストラクタ
-		stations = FXCollections.observableArrayList();
+		connections = FXCollections.observableArrayList();
 		trains = FXCollections.observableArrayList();
-		curveIdxs = FXCollections.observableArrayList();
 		setName(name);
 		//始点と終点は確保しておく
-		stations.add(new Station(name + "始点"));
-		stations.add(new Station(name + "終点"));
+		addStation(new Station(name + "始点"));
+		addStation(new Station(name + "終点"));
 	}
 	
 	public String getName(){
@@ -54,11 +63,31 @@ public class Line {//路線の情報を保持するクラス。
 	public void setName(String name){
 		this.lineName.set(name);
 	}
+	// ここで得られるListは編集可能ではないので注意
 	public ObservableList<Station> getStations(){
-		return stations;
+		ObservableList<Station> staList = FXCollections.observableArrayList();
+		connections.forEach(c -> staList.add(c.station));
+		return staList;
 	}
 	public void setStations(ObservableList<Station> st){
-		stations = st;
+		connections.clear();
+		st.forEach(s -> connections.add(new Connection(s)));
+	}
+	public Connection insertStation(int idx, Station sta) {
+		Connection c = new Connection(sta);
+		connections.add(idx, c);
+		return c;
+	}
+	public Connection addStation(Station sta) {
+		Connection c = new Connection(sta);
+		connections.add(c);
+		return c;
+	}
+	public Connection removeStation(int idx) {
+		return connections.remove(idx);
+	}
+	public ObservableList<Connection> getConnections() {
+		return connections;
 	}
 	public boolean isTategaki(){
 		return tategaki.get();
@@ -128,14 +157,11 @@ public class Line {//路線の情報を保持するクラス。
 	public void setTrains(ObservableList<Train> t){
 		trains = t;
 	}
-	public ObservableList<Integer> getCurveIdxs() {
-		return curveIdxs;
-	}
 	public boolean isCurvable(int idx) {
-		return idx!=0 && stations.size()-idx>2 && //端条件
-				!curveIdxs.contains(idx-1) && !curveIdxs.contains(idx+1); //隣条件
+		return idx!=0 && connections.size()-idx>2 &&
+				!connections.get(idx-1).curve.get() && !connections.get(idx+1).curve.get();//端条件
 	}
 	public boolean getCurveConnection(int idx) {
-		return curveIdxs.contains(idx);
+		return connections.get(idx).curve.get();
 	}
 }
