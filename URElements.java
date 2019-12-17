@@ -170,6 +170,9 @@ public class URElements {//undo_redoのための情報を保持する。
 			if(undoTypeStack.size() == 0) undoable.set(false);
 			//値代入処理
 			switch(type){
+			case BOOLEAN:
+				BooleanPropertyList.get(index).set(!BooleanValueList.get(index));
+				break;
 			case INTEGER:
 				IntegerPropertyList.get(index).set(IntegerOldValueList.get(index));
 				break;
@@ -224,6 +227,9 @@ public class URElements {//undo_redoのための情報を保持する。
 			if(redoTypeStack.size() == 0) redoable.set(false);
 			//値代入処理
 			switch(type){
+			case BOOLEAN:
+				BooleanPropertyList.get(index).set(BooleanValueList.get(index));
+				break;
 			case INTEGER:
 				IntegerPropertyList.get(index).set(IntegerNewValueList.get(index));
 				break;
