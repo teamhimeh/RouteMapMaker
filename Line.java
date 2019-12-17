@@ -158,8 +158,8 @@ public class Line {//路線の情報を保持するクラス。
 		trains = t;
 	}
 	public boolean isCurvable(int idx) {
-		return idx!=0 && connections.size()-idx>2 &&
-				!connections.get(idx-1).curve.get() && !connections.get(idx+1).curve.get();//端条件
+		return idx>1 && connections.size()-idx>1 && //端条件
+				!connections.get(idx-1).curve.get() && !connections.get(idx+1).curve.get();
 	}
 	public boolean getCurveConnection(int idx) {
 		return connections.get(idx).curve.get();

@@ -621,6 +621,7 @@ public class UIController implements Initializable{
 			BooleanProperty cp = lineList.get(indexR).getConnections().get(indexS).curve;
 			cp.set(staCurveConnection.isSelected());
 			urManager.push(cp, cp.get());
+			lineDraw();
 		});
 		staRemoveRestr.setOnAction((ActionEvent)->{
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
@@ -1985,20 +1986,28 @@ public class UIController implements Initializable{
 		gc.setLineWidth(2);
 		for(Line line: lineList){
 			//まずは始点での処理。
+			List<Line.Connection> pointSetStations = line.getConnections().stream().
+					filter(c -> c.station.isSet()).collect(Collectors.toList());
 			startP = line.getStations().get(0).getPoint();
+			gc.beginPath();
+			gc.moveTo(startP[0], startP[1]);
 			int stopIndex = 0;
 			for(int i2 = 1; i2 < line.getStations().size(); i2++){
 				// 座標非固定点はスキップ
 				if(!line.getStations().get(i2).isSet()) {
 					continue;
 				}
+				endP = line.getStations().get(i2).getPoint();
 				if(line.getCurveConnection(i2)) {
 					// ベジエ曲線での接続
-					
+					int idx = pointSetStations.indexOf(line.getConnections().get(i2));
+					double[][] l1 = {pointSetStations.get(idx-2).station.getPoint(), startP};
+					double[][] l2 = {endP, pointSetStations.get(idx+1).station.getPoint()};
+					double[] cp = calcIntersection(l1, l2); //control point
+					gc.quadraticCurveTo(cp[0], cp[1], endP[0], endP[1]);
 				} else {
 					// 直線での接続
-					endP = line.getStations().get(i2).getPoint();
-					gc.strokeLine(startP[0], startP[1], endP[0], endP[1]);
+					gc.lineTo(endP[0], endP[1]);
 					for(int i3 = stopIndex + 1; i3 <= i2; i3++){
 						double[] p = new double[2];
 						p[0] = startP[0] + (endP[0] - startP[0]) * (i3 - stopIndex) / (i2 - stopIndex);
@@ -2007,10 +2016,11 @@ public class UIController implements Initializable{
 							line.getStations().get(i3).setInterPoint(p[0], p[1]);//中間座標の登録
 						}
 					}
-					stopIndex = i2;
-					startP = endP;
 				}
+				stopIndex = i2;
+				startP = endP;
 			}
+			gc.stroke();
 		}
 		//駅の点の描画
 		for(Line l: lineList){
