@@ -2430,9 +2430,9 @@ public class UIController implements Initializable{
 	//戻り値 0->駅統合　1->駅見つからず 2->canceled
 	int stationConnect(int stIndex, int lnIndex, String candName){
 		//路線indexと駅indexをもらって他に同じ駅名があるかどうかを調べる。
-		//candName.isEmpty()==true -> readProp()から呼ばれた場合
+		//candName==null -> readProp()から呼ばれた場合
 		String prevName = lineList.get(lnIndex).getStations().get(stIndex).getName();
-		String gst = candName.isEmpty() ? prevName : candName;//サーチする駅名
+		String gst = candName==null ? prevName : candName;//サーチする駅名
 		Line.Connection con = lineList.get(lnIndex).getConnections().get(stIndex);
 		for(Line l : lineList) {
 			//for(Line.Connection c : l.getConnections()) {
@@ -2446,7 +2446,7 @@ public class UIController implements Initializable{
 				if(!gst.equals(c.station.getName()) || c.station == con.station) {
 					continue;
 				}
-				if(!prevName.isEmpty()) {
+				if(candName!=null) {
 					Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 					alert.setContentText("マップ内に同じ駅名の駅があります。その駅と統合してよろしいですか？");
 					Optional<ButtonType> result = alert.showAndWait();
@@ -2461,7 +2461,7 @@ public class UIController implements Initializable{
 					c.station.setPoint(p[0], p[1]);
 				}
 				//駅オブジェクト自体を置き換えて共通化してしまう。
-				if(!prevName.isEmpty()) urManager.push(con, con.station, c.station, con.station.isSet());
+				if(candName!=null) urManager.push(con, con.station, c.station, con.station.isSet());
 				con.station = c.station;
 				return 0;
 			}
@@ -2795,7 +2795,7 @@ public class UIController implements Initializable{
 		for(int i = 0; i < numOfLines; i++){//lineの読み込み
 			lineList.add(new Line(p.getProperty("line" + String.valueOf(i) + ".lineName")));
 			rnList.add(lineList.get(i).getName());
-			lineList.get(i).getStations().clear();//コンストラクタで生成された奴らを削除する必要がある。
+			lineList.get(i).getConnections().clear();//コンストラクタで生成された奴らを削除する必要がある。
 			if(pVersion < 7){//上付き、下付きなど未対応のデータ
 				boolean tategaki = Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".tategaki"));
 				if(tategaki) lineList.get(i).setNameLocation(Line.BOTTOM);
@@ -2816,32 +2816,33 @@ public class UIController implements Initializable{
 			lineList.get(i).setNameY(Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".nameY")));
 			int numOfSta = Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".NumOfStations"));
 			for(int h = 0; h < numOfSta; h++){//Stationの読み込み
-				lineList.get(i).addStation(new Station
-						(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".name")));
+				Station sta = new Station
+						(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".name"));
+				lineList.get(i).addStation(sta);
 				double rx = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".x"));
 				double ry = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".y"));
 				if(Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".pointSet"))){
 					//pointSetがtrueのとき
-					lineList.get(i).getStations().get(h).setPoint(rx, ry);
+					sta.setPoint(rx, ry);
 				}else{
 					//falseのとき
-					lineList.get(i).getStations().get(h).setInterPoint(rx, ry);
+					sta.setInterPoint(rx, ry);
 				}
-				lineList.get(i).getStations().get(h).setConnection(Integer.parseInt(p.getProperty
+				sta.setConnection(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".stationConnection")));
-				lineList.get(i).getStations().get(h).setMuki(Integer.parseInt(p.getProperty
+				sta.setMuki(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textMuki")));
-				lineList.get(i).getStations().get(h).setNameSize(Integer.parseInt(p.getProperty
+				sta.setNameSize(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".size")));
-				lineList.get(i).getStations().get(h).setNameStyle(Integer.parseInt(p.getProperty
+				sta.setNameStyle(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".style")));
-				lineList.get(i).getStations().get(h).setNameX(Integer.parseInt(p.getProperty
+				sta.setNameX(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".nameX")));
-				lineList.get(i).getStations().get(h).setNameY(Integer.parseInt(p.getProperty
+				sta.setNameY(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".nameY")));
-				lineList.get(i).getStations().get(h).setShiftBase(Boolean.valueOf(p.getProperty
+				sta.setShiftBase(Boolean.valueOf(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".shiftOnStation")));
-				stationConnect(h,i,"");//接続駅はオブジェクト共通化手続き
+				stationConnect(h,i,null);//接続駅はオブジェクト共通化手続き
 			}
 			int numOfTrains = Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".NumOfTrains"));
 			for(int h = 0; h < numOfTrains; h++){//Trainの読み込み
