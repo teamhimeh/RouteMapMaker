@@ -45,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -467,9 +468,8 @@ public class UIController implements Initializable{
 						break;
 					}
 				}
-				Station newSta = new Station(staNum + "駅");
-				urManager.push(line.getStations(), URElements.ArrayCommands.ADD, index, newSta);
-				line.getStations().add(index, newSta);
+				Line.Connection newCon = line.insertStation(index, new Station(staNum + "駅"));
+				urManager.push(line.getConnections(), URElements.ArrayCommands.ADD, index, newCon);
 				//固定座標ではないが参照座標を登録する。
 				double[] p = detectCoordinate(index, RouteTable.getSelectionModel().getSelectedIndex());
 				line.getStations().get(index).setInterPoint(p[0], p[1]);
@@ -517,8 +517,8 @@ public class UIController implements Initializable{
 						
 					}
 				}
-				Station removedSta = line.getStations().remove(index);
-				urManager.push(line.getStations(), index, removedSta, line.getTrains(), remove_Candidates, removedStops);
+				Line.Connection removedCon = line.removeStation(index);
+				urManager.push(line.getConnections(), index, removedCon, line.getTrains(), remove_Candidates, removedStops);
 				snList.clear();
 				for(int i=0; i < line.getStations().size(); i++){
 					snList.add(line.getStations().get(i).getName());
@@ -541,50 +541,12 @@ public class UIController implements Initializable{
 					alert.getDialogPane().setContentText("駅名は空にはできません。\n"
 							+ "中継点を設定するときは駅名大きさパラメーターを-1にしてください。");
 					alert.showAndWait();
-				}else{
-					if(! str.equals(prev)){//もし変更前と変更後が同名なら無視
-						//変更候補名と同名の駅があるか調べる
-						Station sameSta = null;//同名の駅があればこの変数に入れる。nullならば無いということに。
-						int[] indexOfSameSta = new int[2];//座標固定する時にindexが必要になる。
-						search:for(int i = 0; i < lineList.size(); i++){
-							for(int j = 0; j < lineList.get(i).getStations().size(); j++){
-								if(lineList.get(i).getStations().get(j).getName().equals(str)){
-									sameSta = lineList.get(i).getStations().get(j);
-									indexOfSameSta[0] = i;
-									indexOfSameSta[1] = j;
-									break search;
-								}
-							}
-						}
-						if(sameSta == null){//同名の駅は存在しない。駅名を書き換えるだけ。
-							lineList.get(indexR).getStations().get(indexS).setName(str);
-							urManager.push(lineList.get(indexR).getStations().get(indexS).getNameProperty(), prev, str);
-						}else{//同名の駅が存在する。駅オブジェクト自体を置き換える手続きへ。
-							Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-							alert.setContentText("マップ内に同じ駅名の駅があります。その駅と統合してよろしいですか？");
-							Optional<ButtonType> result = alert.showAndWait();
-							if(result.get() == ButtonType.OK){//置き換え処理へ
-								//まず座標非固定点の場合は固定する。
-								boolean fixed = sameSta.isSet();
-								if(! sameSta.isSet()){
-									double[] p = detectCoordinate(indexOfSameSta[1],indexOfSameSta[0]);
-									sameSta.setPoint(p[0], p[1]);
-								}
-								Station replacedSta = lineList.get(indexR).getStations().get(indexS);//置き換える前のオブジェクト
-								//置き換えるべき全ての路線の駅について走査する。
-								ArrayList<Integer[]> replaceIndex = new ArrayList<Integer[]>();//Undoのためにインデックスを記憶
-								for(int i = 0; i < lineList.size(); i++){
-									for(int j = 0; j < lineList.get(i).getStations().size(); j++){
-										if(lineList.get(i).getStations().get(j) == replacedSta){
-											lineList.get(i).getStations().set(j, sameSta);
-											Integer[] id = {i,j};
-											replaceIndex.add(id);
-										}
-									}
-								}
-								urManager.push(lineList, replaceIndex, replacedSta, sameSta, fixed);
-							}
-						}
+				}else if(!str.equals(prev)){
+					//同名の駅による置き換えを試みる
+					if(stationConnect(indexS, indexR, str)==1) {
+						//同名の駅は存在しない。駅名を書き換えるだけ。
+						lineList.get(indexR).getStations().get(indexS).setName(str);
+						urManager.push(lineList.get(indexR).getStations().get(indexS).getNameProperty(), prev, str);
 					}
 				}
 				snList.clear();
@@ -656,18 +618,9 @@ public class UIController implements Initializable{
 		staCurveConnection.setOnAction((ActionEvent)->{
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 			int indexS = StationList.getSelectionModel().getSelectedIndex();
-			Station sta = lineList.get(indexR).getStations().get(indexS);
-			ObservableList<Integer> ci = lineList.get(indexR).getCurveIdxs();
-			if(staCurveConnection.isSelected()) {
-				//idxを追加する
-				ci.add(indexS);
-				//urManager.push(line.getStations(), URElements.ArrayCommands.ADD, ci.size()-1, Integer(indexS));
-			} else {
-				//idxを削除する
-				int idx = ci.indexOf(indexS);
-				ci.remove(idx);
-				//urManager.push(line.getStations(), URElements.ArrayCommands.REMOVE, idx, indexS);
-			}
+			BooleanProperty cp = lineList.get(indexR).getConnections().get(indexS).curve;
+			cp.set(staCurveConnection.isSelected());
+			urManager.push(cp, cp.get());
 		});
 		staRemoveRestr.setOnAction((ActionEvent)->{
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
@@ -708,7 +661,7 @@ public class UIController implements Initializable{
 					newSta.setNameSize(oldSta.getNameSize());
 					newSta.setNameStyle(oldSta.getNameStyle());
 					//描画位置設定は引き継がないことにする
-					lineList.get(indexR).getStations().set(indexS, newSta);
+					lineList.get(indexR).getConnections().get(indexS).station = newSta;
 					lineDraw();
 					snList.clear();
 					for(int i=0; i < lineList.get(indexR).getStations().size(); i++){
@@ -2462,46 +2415,54 @@ public class UIController implements Initializable{
 			mapDraw();
 		}
 	}
-	boolean stationConnect(int stIndex, int lnIndex, boolean auto){//キャンセルされたかを返す。
+	
+	//与えられた駅について他に同じ駅名をもつ駅があればそれに置き換える
+	//戻り値 0->駅統合　1->駅見つからず 2->canceled
+	int stationConnect(int stIndex, int lnIndex, String candName){
 		//路線indexと駅indexをもらって他に同じ駅名があるかどうかを調べる。
-		boolean canceled = false;
-		String gst = lineList.get(lnIndex).getStations().get(stIndex).getName();//サーチする駅名
-		search: for(int i=0; i < lineList.size(); i++){
-			for(int j = 0; j < lineList.get(i).getStations().size(); j++){
-				if(i != lnIndex || j != stIndex){//自分自身に関しては探索しない。同じ路線内でも接続してしまうよ。
-					//名前が一致した場合かつオブジェクトが異なる場合
-					if(gst.equals(lineList.get(i).getStations().get(j).getName()) && 
-							lineList.get(lnIndex).getStations().get(stIndex) != lineList.get(i).getStations().get(j)){
-						boolean dodo = auto;//connect処理を実際にやるかやらないか
-						if(! dodo){
-							Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-							alert.setContentText("マップ内に同じ駅名の駅があります。その駅と統合してよろしいですか？");
-							Optional<ButtonType> result = alert.showAndWait();
-							if(result.get() == ButtonType.OK) dodo = true;
-							if(result.get() == ButtonType.CANCEL) canceled = true;
-						}
-						if(dodo){
-							if(lineList.get(i).getStations().get(j).isSet() == false){//座標非設置点だった場合
-								double[] p = detectCoordinate(j,i);
-								//接続点は座標を固定。
-								lineList.get(i).getStations().get(j).setPoint(p[0], p[1]);
-							}
-							//駅オブジェクト自体を置き換えて共通化してしまう。
-							lineList.get(lnIndex).getStations().set(stIndex, lineList.get(i).getStations().get(j));
-							//lineList.get(lnIndex).getStations().get(stIndex).plusConnection();
-						}
-						break search;
+		//candName.isEmpty()==true -> readProp()から呼ばれた場合
+		String prevName = lineList.get(lnIndex).getStations().get(stIndex).getName();
+		String gst = candName.isEmpty() ? prevName : candName;//サーチする駅名
+		Line.Connection con = lineList.get(lnIndex).getConnections().get(stIndex);
+		for(Line l : lineList) {
+			//for(Line.Connection c : l.getConnections()) {
+			for(int i=0; i<l.getConnections().size(); i++) {
+				Line.Connection c = l.getConnections().get(i);
+				if(c==con) {
+					//自分自身に関しては探索しない。
+					continue;
+				}
+				//駅名が同じ and 同じ駅objectではない→結合
+				if(!gst.equals(c.station.getName()) || c.station == con.station) {
+					continue;
+				}
+				if(!prevName.isEmpty()) {
+					Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+					alert.setContentText("マップ内に同じ駅名の駅があります。その駅と統合してよろしいですか？");
+					Optional<ButtonType> result = alert.showAndWait();
+					if(result.get() == ButtonType.CANCEL) {
+						//結合せずにキャンセル．
+						return 2;
 					}
 				}
+				if(!c.station.isSet()){//座標非設置点だった場合
+					double[] p = detectCoordinate(i, l);
+					//接続点は座標を固定。
+					c.station.setPoint(p[0], p[1]);
+				}
+				//駅オブジェクト自体を置き換えて共通化してしまう。
+				if(!prevName.isEmpty()) urManager.push(con, con.station, c.station, con.station.isSet());
+				con.station = c.station;
+				return 0;
 			}
 		}
-		return canceled;
+		return 1;
 	}
 	
-	double[] detectCoordinate(int stIndex, int lnIndex){//座標非設定点でその駅の座標を特定するメソッド
+	double[] detectCoordinate(int stIndex, Line line) {
 		double[] detected = new double[2];
-		if(lineList.get(lnIndex).getStations().get(stIndex).isSet()){
-			return lineList.get(lnIndex).getStations().get(stIndex).getPoint();
+		if(line.getStations().get(stIndex).isSet()){
+			return line.getStations().get(stIndex).getPoint();
 		}else{
 			double[] start = new double[2];
 			double[] end = new double[2];
@@ -2509,16 +2470,16 @@ public class UIController implements Initializable{
 			int endIndex = 0;
 			//始点検索
 			for(int i = stIndex - 1; i >= 0; i--){
-				if(lineList.get(lnIndex).getStations().get(i).isSet()){
-					start = lineList.get(lnIndex).getStations().get(i).getPoint();
+				if(line.getStations().get(i).isSet()){
+					start = line.getStations().get(i).getPoint();
 					startIndex = i;
 					break;
 				}
 			}
 			//終点検索
-			for(int i = stIndex + 1; i < lineList.get(lnIndex).getStations().size(); i++){
-				if(lineList.get(lnIndex).getStations().get(i).isSet()){
-					end = lineList.get(lnIndex).getStations().get(i).getPoint();
+			for(int i = stIndex + 1; i < line.getStations().size(); i++){
+				if(line.getStations().get(i).isSet()){
+					end = line.getStations().get(i).getPoint();
 					endIndex = i;
 					break;
 				}
@@ -2527,7 +2488,10 @@ public class UIController implements Initializable{
 			detected[1] = start[1] + (end[1] - start[1]) * (stIndex - startIndex) / (endIndex - startIndex);
 			return detected;
 		}
-		
+	}
+	
+	double[] detectCoordinate(int stIndex, int lnIndex){//座標非設定点でその駅の座標を特定するメソッド
+		return detectCoordinate(stIndex, lineList.get(lnIndex));
 	}
 	
 	Station searchStation(double x, double y){
@@ -2842,7 +2806,7 @@ public class UIController implements Initializable{
 			lineList.get(i).setNameY(Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".nameY")));
 			int numOfSta = Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".NumOfStations"));
 			for(int h = 0; h < numOfSta; h++){//Stationの読み込み
-				lineList.get(i).getStations().add(new Station
+				lineList.get(i).addStation(new Station
 						(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".name")));
 				double rx = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".x"));
 				double ry = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".y"));
@@ -2867,7 +2831,7 @@ public class UIController implements Initializable{
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".nameY")));
 				lineList.get(i).getStations().get(h).setShiftBase(Boolean.valueOf(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".shiftOnStation")));
-				stationConnect(h,i,true);//接続駅はオブジェクト共通化手続き
+				stationConnect(h,i,"");//接続駅はオブジェクト共通化手続き
 			}
 			int numOfTrains = Integer.parseInt(p.getProperty("line" + String.valueOf(i) + ".NumOfTrains"));
 			for(int h = 0; h < numOfTrains; h++){//Trainの読み込み
