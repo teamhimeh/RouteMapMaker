@@ -2247,119 +2247,123 @@ public class UIController implements Initializable{
 		for(int k = lineList.size() - 1; 0 <= k; k--){//路線ごとに処理
 			for(int i = lineList.get(k).getTrains().size() - 1; 0 <= i; i--){//系統ごとに処理。降順に処理していく。
 				Train train = lineList.get(k).getTrains().get(i);
-				if(train.getStops().size() >= 2){//0駅もしくは1駅しか登録されてない系統は無視
-					//線の描画処理
-					gc.setStroke(train.getLineColor());
-					gc.setLineWidth(train.getLineWidth());
-					gc.setLineDashes(train.getLineDash().get());
-					gc.setFill(train.getMarkColor());
-					int zure = train.getLineDistance();
-					int mark_Size = train.getMarkSize();
-					List<String> lineStationNames = lineList.get(k).getStations().stream()
-							.map(sta -> sta.getName()).collect(Collectors.toList()); // 路線の駅名リスト
-					int lastIndex = train.getStops().size() - 1;
-					//路線における系統の始点の番号
-					int startPoint = lineStationNames.indexOf(train.getStops().get(0).getSta().getName());
-					//路線における系統の終点の番号
-					int endPoint = lineStationNames.lastIndexOf(train.getStops().get(lastIndex).getSta().getName());
-					int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
-					double[] start = new double[2];
-					double[] end = new double[2];
-					//まずはedgeAを考えましょう。
-					double[][] so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
-							lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
-					double edgeALength = lineList.get(k).getTrains().get(i).getEdgeA();
-					int[] staShift = lineList.get(k).getTrains().get(i).getStops().get(0).getShift();//スタートなのでindex0
-					//so[0]にstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
-					so[0][0] = so[0][0] + staShift[0];
-					so[0][1] = so[0][1] + staShift[1];
-					//edgeAを考慮する。
-					start[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
-							Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-					start[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
-							Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-					double[][] ll = null;//edgeBの処理の関係でここで宣言しておきます。
-					//lineList.get(k).getStations().get(startPoint).setShiftCoor(start.clone());
-					for(int h = startPoint; h < endPoint; h++){//各駅ごとに繰り返し描画していく。
-						if(lineList.get(k).getStations().get(h+1).isSet() == true && h != endPoint - 1){
+				if(train.getStops().size() < 2) {
+					//0駅もしくは1駅しか登録されてない系統は無視
+					continue;
+				}
+				//線の描画処理
+				gc.setStroke(train.getLineColor());
+				gc.setLineWidth(train.getLineWidth());
+				gc.setLineDashes(train.getLineDash().get());
+				gc.setFill(train.getMarkColor());
+				int zure = train.getLineDistance();
+				int mark_Size = train.getMarkSize();
+				List<String> lineStationNames = lineList.get(k).getStations().stream()
+						.map(sta -> sta.getName()).collect(Collectors.toList()); // 路線の駅名リスト
+				int lastIndex = train.getStops().size() - 1;
+				//路線における系統の始点の番号
+				int startPoint = lineStationNames.indexOf(train.getStops().get(0).getSta().getName());
+				//路線における系統の終点の番号
+				int endPoint = lineStationNames.lastIndexOf(train.getStops().get(lastIndex).getSta().getName());
+				int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
+				double[] start = new double[2];
+				double[] end = new double[2];
+				//まずはedgeAを考えましょう。
+				double[][] so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
+						lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
+				double edgeALength = lineList.get(k).getTrains().get(i).getEdgeA();
+				int[] staShift = lineList.get(k).getTrains().get(i).getStops().get(0).getShift();//スタートなのでindex0
+				//so[0]にstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
+				so[0][0] = so[0][0] + staShift[0];
+				so[0][1] = so[0][1] + staShift[1];
+				lineList.get(k).getStations().get(startPoint).setShiftCoor(so[0]);
+				//edgeAを考慮する。
+				start[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
+						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
+				start[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
+						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
+				//lineList.get(k).getStations().get(startPoint).setShiftCoor(start.clone());
+				gc.beginPath();
+				gc.moveTo(start[0], start[1]);
+				for(int h = startPoint+1; h <= endPoint; h++){//各駅ごとに繰り返し描画していく。
+					boolean curve = lineList.get(k).isCurvable(h) && lineList.get(k).getCurveConnection(h);
+					if(h == endPoint){//最後のひと区間の時の処理。
+						double[][] ll = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
+								lineList.get(k).getStations().get(h).getPointUS(), zure);
+						//駅毎位置補正を加える。
+						//ll[1]に補正を加える事でShiftCoorに反映される。
+						staShift = train.getStops().get(stopCount).getShift();
+						ll[1][0] = ll[1][0] + staShift[0];
+						ll[1][1] = ll[1][1] + staShift[1];
+						double edgeBLength = train.getEdgeB();
+						end[0] = ll[1][0] + (ll[1][0] - ll[0][0]) * edgeBLength /
+								Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
+						end[1] = ll[1][1] + (ll[1][1] - ll[0][1]) * edgeBLength /
+								Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
+						lineList.get(k).getStations().get(endPoint).setShiftCoor(ll[1]);
+					} else {
+						boolean next_curve = lineList.get(k).isCurvable(h+1) 
+								&& lineList.get(k).getCurveConnection(h+1);
+						if(lineList.get(k).getStations().get(h).isSet() && !curve && !next_curve) {
 							//この場合は歪みを防ぐため特殊な処理が必要。連立方程式を用意してその解を採用する。
-							double[][] zhA = shiftPoint(lineList.get(k).getStations().get(h).getPointUS(),
-									lineList.get(k).getStations().get(h+1).getPoint(), zure);
-							double[][] zhB = shiftPoint(lineList.get(k).getStations().get(h+1).getPoint(),
-									lineList.get(k).getStations().get(h+2).getPointUS(), zure);
-							end = calcIntersection(zhA, zhB);
-							//駅毎位置補正を加える。
-							if(lineList.get(k).getStations().get(h+1) == train.getStops().get(stopCount).getSta()){
-								staShift = train.getStops().get(stopCount).getShift();
-								end[0] = end[0] + staShift[0];
-								end[1] = end[1] + staShift[1];
-								stopCount ++;//最後にstopcountを一つ上げる。
-							}
-						}else if(h == endPoint - 1){//最後のひと区間の時の処理。
-							ll = shiftPoint(lineList.get(k).getStations().get(h).getPointUS(),
+							double[][] zhA = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
+									lineList.get(k).getStations().get(h).getPoint(), zure);
+							double[][] zhB = shiftPoint(lineList.get(k).getStations().get(h).getPoint(),
 									lineList.get(k).getStations().get(h+1).getPointUS(), zure);
-							//駅毎位置補正を加える。
-							//ll[1]に補正を加える事でShiftCoorに反映される。
-							staShift = lineList.get(k).getTrains().get(i).getStops().get(stopCount).getShift();
-							ll[1][0] = ll[1][0] + staShift[0];
-							ll[1][1] = ll[1][1] + staShift[1];
-							/*
-							if(lineList.get(k).getTrains().get(i).getStops().get(stopCount) == lineList.get(k).getTrains().
-									get(i).getStops().get(lineList.get(k).getTrains().get(i).getStops().size() - 1)){
-								//ll[1]に補正を加える事でShiftCoorに反映される。
-								staShift = lineList.get(k).getTrains().get(i).getStops().get(stopCount).getShift();
-								ll[1][0] = ll[1][0] + staShift[0];
-								ll[1][1] = ll[1][1] + staShift[1];
-							}else{
-								throw new IllegalArgumentException("lineList"+k+", train"+i+"でstopCountが正常に計算されていません！");
-							}
-							*/
-							double edgeBLength = lineList.get(k).getTrains().get(i).getEdgeB();
-							end[0] = ll[1][0] + (ll[1][0] - ll[0][0]) * edgeBLength /
-									Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
-							end[1] = ll[1][1] + (ll[1][1] - ll[0][1]) * edgeBLength /
-									Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
-						}else{
+							end = calcIntersection(zhA, zhB);
+						} else if(curve) {
 							end = shiftPoint(lineList.get(k).getStations().get(h).getPointUS(),
-									lineList.get(k).getStations().get(h+1).getPointUS(), zure)[1];
-							//駅毎位置補正を加える。
-							if(lineList.get(k).getStations().get(h+1) == lineList.get(k).getTrains().get(i).getStops().
-									get(stopCount).getSta()){
-								staShift = lineList.get(k).getTrains().get(i).getStops().get(stopCount).getShift();
-								end[0] = end[0] + staShift[0];
-								end[1] = end[1] + staShift[1];
-								stopCount ++;//最後にstopcountを一つ上げる。
-							}
+									lineList.get(k).getStations().get(h+1).getPointUS(), zure)[0];
+						} else {
+							end = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
+									lineList.get(k).getStations().get(h).getPointUS(), zure)[1];
 						}
-						gc.strokeLine(start[0], start[1], end[0], end[1]);
-						lineList.get(k).getStations().get(h+1).setShiftCoor(end.clone());
-						start[0] = end[0];
-						start[1] = end[1];
+						//駅毎位置補正を加える。
+						if(lineList.get(k).getStations().get(h) == train.getStops().get(stopCount).getSta()){
+							staShift = train.getStops().get(stopCount).getShift();
+							end[0] = end[0] + staShift[0];
+							end[1] = end[1] + staShift[1];
+							stopCount ++;//最後にstopcountを一つ上げる。
+						}
+						lineList.get(k).getStations().get(h).setShiftCoor(end.clone());
 					}
-					lineList.get(k).getStations().get(startPoint).setShiftCoor(so[0]);
-					lineList.get(k).getStations().get(endPoint).setShiftCoor(ll[1]);
-					gc.setLineDashes(null);//破線設定の後処理
-					//上書きの問題があってやはりmarkは線を書き終わってからにしよう。
-					for(int h = 0; h < lineList.get(k).getTrains().get(i).getStops().size(); h++){
-						//どのmarkを使うのか決める。
-						StopMark mm = null;
-						if(lineList.get(k).getTrains().get(i).getStops().get(h).getMark() == StopMark.OBEY_LINE){
-							mm = lineList.get(k).getTrains().get(i).getMark();
-						}else{
-							mm = lineList.get(k).getTrains().get(i).getStops().get(h).getMark();
-						}
-						//以下、それぞれのマークの処理
-						if(mm == StopMark.CIRCLE){
-							gc.setFill(lineList.get(k).getTrains().get(i).getMarkColor());
-							gc.fillOval(lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor()[0] - mark_Size / 2,
-									lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor()[1] - mark_Size / 2, 
-									mark_Size, mark_Size);
-						}else if(mm == StopMark.NO_DRAW){
-							//NO_DRAWなのでなにもしない。
-						}else{//カスタムマーク
-							CustomMarkController.markDraw(gc, mm, mark_Size,
-									lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor());
-						}
+					if(curve) {
+						// ベジエ曲線での接続
+						double[][] l1 = shiftPoint(lineList.get(k).getStations().get(h-2).getPointUS(),
+								lineList.get(k).getStations().get(h-1).getPointUS(), zure);
+						double[][] l2 = shiftPoint(lineList.get(k).getStations().get(h).getPointUS(),
+								lineList.get(k).getStations().get(h+1).getPointUS(), zure);
+						double[] cp = calcIntersection(l1, l2); //control point
+						gc.quadraticCurveTo(cp[0], cp[1], end[0], end[1]);
+					} else {
+						// 直線での接続
+						gc.lineTo(end[0], end[1]);
+					}
+					start[0] = end[0];
+					start[1] = end[1];
+				}
+				gc.stroke();
+				gc.setLineDashes(null);//破線設定の後処理
+				//上書きの問題があってやはりmarkは線を書き終わってからにしよう。
+				for(int h = 0; h < lineList.get(k).getTrains().get(i).getStops().size(); h++){
+					//どのmarkを使うのか決める。
+					StopMark mm = null;
+					if(lineList.get(k).getTrains().get(i).getStops().get(h).getMark() == StopMark.OBEY_LINE){
+						mm = lineList.get(k).getTrains().get(i).getMark();
+					}else{
+						mm = lineList.get(k).getTrains().get(i).getStops().get(h).getMark();
+					}
+					//以下、それぞれのマークの処理
+					if(mm == StopMark.CIRCLE){
+						gc.setFill(lineList.get(k).getTrains().get(i).getMarkColor());
+						gc.fillOval(lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor()[0] - mark_Size / 2,
+								lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor()[1] - mark_Size / 2, 
+								mark_Size, mark_Size);
+					}else if(mm == StopMark.NO_DRAW){
+						//NO_DRAWなのでなにもしない。
+					}else{//カスタムマーク
+						CustomMarkController.markDraw(gc, mm, mark_Size,
+								lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor());
 					}
 				}
 			}
