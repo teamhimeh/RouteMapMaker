@@ -77,7 +77,7 @@
                   <RadioButton fx:id="tateTop" layoutX="101.0" layoutY="207.0" mnemonicParsing="false" text="縦 - 上付き" textFill="DARKRED" />
                   <RadioButton fx:id="yokoLeft" layoutX="101.0" layoutY="257.0" mnemonicParsing="false" text="横 - 左付き" textFill="DARKSALMON" />
                   <Button fx:id="RouteLoad" layoutX="84.0" layoutY="44.0" mnemonicParsing="false" text="読込" />
-                  <CheckBox fx:id="staCurveConnection" disable="true" layoutX="14.0" layoutY="745.0" mnemonicParsing="false" text="後ろの駅と曲線接続" />
+                  <CheckBox fx:id="staCurveConnection" disable="true" layoutX="14.0" layoutY="745.0" mnemonicParsing="false" text="前の駅と曲線接続" />
                </children>
             </AnchorPane>
          </content>
