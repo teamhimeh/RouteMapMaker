@@ -2822,7 +2822,9 @@ public class UIController implements Initializable{
 			for(int h = 0; h < numOfSta; h++){//Stationの読み込み
 				Station sta = new Station
 						(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".name"));
-				lineList.get(i).addStation(sta);
+				Line.Connection con = lineList.get(i).addStation(sta);
+				con.curve.set(Boolean.valueOf(p.getProperty
+						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".curve")));
 				double rx = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".x"));
 				double ry = Double.parseDouble(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".y"));
 				if(Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".pointSet"))){
@@ -2978,35 +2980,38 @@ public class UIController implements Initializable{
 			p.setProperty("line" + String.valueOf(i) + ".nameY", String.valueOf(lineList.get(i).getNameZure()[1]));
 			p.setProperty("line" + String.valueOf(i) + ".NumOfStations", String.valueOf(lineList.get(i).getStations().size()));
 			for(int h = 0; h < lineList.get(i).getStations().size(); h++){
+				Station station = lineList.get(i).getStations().get(h);
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".name", 
-						lineList.get(i).getStations().get(h).getName());
+						station.getName());
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".pointSet", 
-						String.valueOf(lineList.get(i).getStations().get(h).isSet()));
-				if(lineList.get(i).getStations().get(h).isSet()){
+						String.valueOf(station.isSet()));
+				if(station.isSet()){
 					p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".x", 
-							String.valueOf(lineList.get(i).getStations().get(h).getPoint()[0]));
+							String.valueOf(station.getPoint()[0]));
 					p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".y", 
-							String.valueOf(lineList.get(i).getStations().get(h).getPoint()[1]));
+							String.valueOf(station.getPoint()[1]));
 				}else{
 					p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".x", 
-							String.valueOf(lineList.get(i).getStations().get(h).getInterPoint()[0]));
+							String.valueOf(station.getInterPoint()[0]));
 					p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".y", 
-							String.valueOf(lineList.get(i).getStations().get(h).getInterPoint()[1]));
+							String.valueOf(station.getInterPoint()[1]));
 				}
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".stationConnection", 
-						String.valueOf(lineList.get(i).getStations().get(h).getConnection()));
+						String.valueOf(station.getConnection()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textMuki", 
-						String.valueOf(lineList.get(i).getStations().get(h).getMuki()));
+						String.valueOf(station.getMuki()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".size", 
-						String.valueOf(lineList.get(i).getStations().get(h).getNameSize()));
+						String.valueOf(station.getNameSize()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".style", 
-						String.valueOf(lineList.get(i).getStations().get(h).getNameStyle()));
+						String.valueOf(station.getNameStyle()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".nameX", 
-						String.valueOf(lineList.get(i).getStations().get(h).getNameZure()[0]));
+						String.valueOf(station.getNameZure()[0]));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".nameY", 
-						String.valueOf(lineList.get(i).getStations().get(h).getNameZure()[1]));
+						String.valueOf(station.getNameZure()[1]));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".shiftOnStation", 
-						String.valueOf(lineList.get(i).getStations().get(h).shiftBasedOnStation()));
+						String.valueOf(station.shiftBasedOnStation()));
+				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".curve", 
+						String.valueOf(lineList.get(i).getConnections().get(h).curve.get()));
 			}
 			p.setProperty("line" + String.valueOf(i) + ".NumOfTrains", String.valueOf(lineList.get(i).getTrains().size()));
 			for(int h = 0; h < lineList.get(i).getTrains().size(); h++){
