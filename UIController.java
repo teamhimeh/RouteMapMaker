@@ -106,6 +106,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Pair;
+
 import javax.imageio.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -2266,7 +2268,6 @@ public class UIController implements Initializable{
 				//路線における系統の終点の番号
 				int endPoint = lineStationNames.lastIndexOf(train.getStops().get(lastIndex).getSta().getName());
 				int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
-				double[] start = new double[2];
 				double[] end = new double[2];
 				//まずはedgeAを考えましょう。
 				double[][] so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
@@ -2278,14 +2279,17 @@ public class UIController implements Initializable{
 				so[0][1] = so[0][1] + staShift[1];
 				lineList.get(k).getStations().get(startPoint).setShiftCoor(so[0]);
 				//edgeAを考慮する。
-				start[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
+				end[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-				start[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
+				end[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
 				//lineList.get(k).getStations().get(startPoint).setShiftCoor(start.clone());
-				gc.beginPath();
-				gc.moveTo(start[0], start[1]);
-				for(int h = startPoint+1; h <= endPoint; h++){//各駅ごとに繰り返し描画していく。
+				ArrayList<Pair<double[], Boolean>> staPoints = 
+						new ArrayList<Pair<double[], Boolean>>(); //<座標, curve>
+				//最初の点もstaPointsに保存する．曲線描画で必要になることがあるため．
+				staPoints.add(new Pair<double[], Boolean>(end.clone(), false)); //最初の駅は必ず直線接続
+				//ライン位置補正，駅位置補正，edgeを考慮して各駅の座標を決定していく
+				for(int h = startPoint+1; h <= endPoint; h++){
 					boolean curve = lineList.get(k).isCurvable(h) && lineList.get(k).getCurveConnection(h);
 					if(h == endPoint){//最後のひと区間の時の処理。
 						double[][] ll = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
@@ -2327,20 +2331,25 @@ public class UIController implements Initializable{
 						}
 						lineList.get(k).getStations().get(h).setShiftCoor(end.clone());
 					}
-					if(curve) {
+					staPoints.add(new Pair<double[], Boolean>(end.clone(), curve));
+				}
+				//staPointsにストアされた座標をもとに描画
+				for(int h=0; h<staPoints.size(); h++) {
+					double[] p = staPoints.get(h).getKey();
+					boolean curve = staPoints.get(h).getValue();
+					if(h==0) { //始点
+						gc.beginPath();
+						gc.moveTo(p[0], p[1]);
+					}else if(curve) {
 						// ベジエ曲線での接続
-						double[][] l1 = shiftPoint(lineList.get(k).getStations().get(h-2).getPointUS(),
-								lineList.get(k).getStations().get(h-1).getPointUS(), zure);
-						double[][] l2 = shiftPoint(lineList.get(k).getStations().get(h).getPointUS(),
-								lineList.get(k).getStations().get(h+1).getPointUS(), zure);
+						double[][] l1 = {staPoints.get(h-2).getKey(), staPoints.get(h-1).getKey()};
+						double[][] l2 = {p, staPoints.get(h+1).getKey()};
 						double[] cp = calcIntersection(l1, l2); //control point
-						gc.quadraticCurveTo(cp[0], cp[1], end[0], end[1]);
+						gc.quadraticCurveTo(cp[0], cp[1], p[0], p[1]);
 					} else {
 						// 直線での接続
-						gc.lineTo(end[0], end[1]);
+						gc.lineTo(p[0], p[1]);
 					}
-					start[0] = end[0];
-					start[1] = end[1];
 				}
 				gc.stroke();
 				gc.setLineDashes(null);//破線設定の後処理
