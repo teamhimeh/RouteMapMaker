@@ -1190,8 +1190,6 @@ public class UIController implements Initializable{
 		TrainTable.setCellFactory(TextFieldListCell.forListView());
 		TrainTable.setEditable(true);
 		//メニューバー横にある２つのトグルボタンについて。編集領域を切り替える。
-		rightPane.setDisable(false);//初期状態は右側だけ編集可能
-		leftPane.setDisable(true);
 		esGroup = new ToggleGroup();
 		rightEditButton.setToggleGroup(esGroup);
 		rightEditButton.setSelected(true);
@@ -1199,14 +1197,14 @@ public class UIController implements Initializable{
 		esGroup.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					if(esGroup.getSelectedToggle() == rightEditButton){
-						rightPane.setDisable(false);
-						leftPane.setDisable(true);
+						rightPane.setVisible(true);
+						leftPane.setVisible(false);
 						ZoomSlider.setDisable(true);
 						selectSomething(true);
 						lineDraw();
 					}else if(esGroup.getSelectedToggle() == leftEditButton){
-						rightPane.setDisable(true);
-						leftPane.setDisable(false);
+						rightPane.setVisible(false);
+						leftPane.setVisible(true);
 						ZoomSlider.setDisable(false);
 						zoom = 1;
 						ZoomSlider.setValue(0);
