@@ -8,7 +8,8 @@ public class TrainStop {//系統毎に保持する必要がある駅に関する
 	private IntegerProperty shiftX = new SimpleIntegerProperty();//停車駅印のシフト
 	private IntegerProperty shiftY = new SimpleIntegerProperty();
 	private StopMark mark = StopMark.OBEY_LINE;//駅ごとの停車駅印。
-	public TrainStop(Station s){//オブジェクトの生成時はstationを要求。一度生成したら変更は認めない。
+	
+	public TrainStop(Station s){//オブジェクトの生成時はstationを要求。
 		this.station = s;
 		shiftX.set(0);
 		shiftY.set(0);
@@ -32,6 +33,9 @@ public class TrainStop {//系統毎に保持する必要がある駅に関する
 	}
 	public Station getSta(){
 		return this.station;
+	}
+	public void setSta(Station s) {
+		station = s;
 	}
 	public void setMark(StopMark m){
 		this.mark = m;
