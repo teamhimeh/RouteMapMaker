@@ -2444,9 +2444,8 @@ public class UIController implements Initializable{
 		//candName==null -> readProp()から呼ばれた場合
 		String prevName = lineList.get(lnIndex).getStations().get(stIndex).getName();
 		String gst = candName==null ? prevName : candName;//サーチする駅名
-		Line.Connection con = lineList.get(lnIndex).getConnections().get(stIndex);
+		Line.Connection con = lineList.get(lnIndex).getConnections().get(stIndex); //置き換え対象connection
 		for(Line l : lineList) {
-			//for(Line.Connection c : l.getConnections()) {
 			for(int i=0; i<l.getConnections().size(); i++) {
 				Line.Connection c = l.getConnections().get(i);
 				if(c==con) {
@@ -2472,8 +2471,17 @@ public class UIController implements Initializable{
 					c.station.setPoint(p[0], p[1]);
 				}
 				//駅オブジェクト自体を置き換えて共通化してしまう。
-				if(candName!=null) urManager.push(con, con.station, c.station, con.station.isSet());
-				con.station = c.station;
+				//すべての路線のConnectionとTrainStopを走査し，すべての当該駅を置き換える
+				List<Line.Connection> replaced_cons = lineList.stream().flatMap(l_l -> l_l.getConnections().stream())
+				.filter(l_c -> l_c.station==con.station).collect(Collectors.toList()); //置き換え対象connection
+				List<TrainStop> replaced_stop = lineList.stream().flatMap(l_l -> l_l.getTrains().stream())
+						.flatMap(l_t -> l_t.getStops().stream()).filter(l_s -> l_s.getSta()==con.station)
+						.collect(Collectors.toList()); //置き換え対象train stop
+				if(candName!=null) {
+					urManager.push(replaced_cons, replaced_stop, con.station, c.station, con.station.isSet());
+				}
+				replaced_cons.forEach(rc -> rc.station = c.station);
+				replaced_stop.forEach(rs -> rs.setSta(c.station));
 				return 0;
 			}
 		}

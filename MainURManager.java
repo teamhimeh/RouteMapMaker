@@ -1,13 +1,11 @@
 package RouteMapMaker;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import RouteMapMaker.URElements.ArrayCommands;
-import RouteMapMaker.URElements.Type;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.paint.Color;
 
 //main画面でundo/redoをサポートするため独自命令に対応するクラス。
 public class MainURManager extends URElements {
@@ -95,13 +93,13 @@ public class MainURManager extends URElements {
 		undoable.set(true);
 		redoable.set(false);
 	}
-	public void push(Line.Connection connection, Station prevSta,
-			Station replacing, boolean fixed){
+	public void push(List<Line.Connection> connections, List<TrainStop> stops,
+			Station prevSta, Station replacing, boolean fixed){
 		undoTypeStack.push(Type.SUBCLASS);
 		undoIndexStack.push(MainCommandList.size());
 		redoTypeStack.clear();
 		redoIndexStack.clear();
-		integrateSta is = new integrateSta(connection, prevSta, replacing, fixed);
+		IntegrateSta is = new IntegrateSta(connections, stops, prevSta, replacing, fixed);
 		MainCommandList.add(is);
 		undoable.set(true);
 		redoable.set(false);
@@ -316,27 +314,32 @@ public class MainURManager extends URElements {
 			uic.canvasOriginal = newSize;
 		}
 	}
-	public class integrateSta implements canUR{
-		Line.Connection connection; //置き換える駅のConnection
+	public class IntegrateSta implements canUR{
+		List<Line.Connection> connections; //置き換える駅のConnectionの配列
+		List<TrainStop> stops; //置き換える駅を含んだTrainStopの配列
 		Station prevSta;//置き換え前
 		Station replacing;//置き換え後
 		boolean fixed;//以前座標固定点だったか否か
-		integrateSta(Line.Connection con, Station prevSta, Station replacing, boolean fixed){
-			this.connection = con;
+		IntegrateSta(List<Line.Connection> con, List<TrainStop> stops,
+				Station prevSta, Station replacing, boolean fixed){
+			this.connections = con;
+			this.stops = stops;
 			this.prevSta = prevSta;
 			this.replacing = replacing;
 			this.fixed = fixed;
 		}
 		@Override
 		public void undo() {
-			connection.station = prevSta;
+			connections.forEach(c -> c.station = prevSta);
+			stops.forEach(s -> s.setSta(prevSta));
 			if(!fixed) replacing.erasePoint();//座標非固定点ならば非固定にする。
 		}
 		@Override
 		public void redo() {
 			// TODO Auto-generated method stub
 			if(!fixed) replacing.setPoint(replacing.getInterPoint()[0], replacing.getInterPoint()[1]);
-			connection.station = replacing;
+			connections.forEach(c -> c.station = replacing);
+			stops.forEach(s -> s.setSta(replacing));
 		}
 	}
 }
