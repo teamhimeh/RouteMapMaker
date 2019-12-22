@@ -246,7 +246,7 @@
       </MenuBar>
       <ToggleButton fx:id="leftEditButton" layoutX="557.0" mnemonicParsing="false" text="運転経路編集モード" AnchorPane.rightAnchor="108.0" AnchorPane.topAnchor="0.0" />
       <ToggleButton fx:id="rightEditButton" layoutX="691.0" mnemonicParsing="false" text="路線編集モード" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Slider fx:id="ZoomSlider" disable="true" layoutX="660.0" layoutY="27.0" prefHeight="23.0" prefWidth="140.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
+      <Slider fx:id="ZoomSlider" layoutX="660.0" layoutY="27.0" prefHeight="23.0" prefWidth="140.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
       <Label layoutX="591.0" layoutY="30.0" text="表示倍率" AnchorPane.rightAnchor="143.0" AnchorPane.topAnchor="30.0">
          <font>
             <Font size="12.0" />

@@ -717,19 +717,19 @@ public class UIController implements Initializable{
 						staCurveConnection.setSelected(lineList.get(indexR).getCurveConnection(indexS));
 					}
 				});
-		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。
+		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。station座標（zoomを考慮）．
 		draggedRect.setVisible(false);
 		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>(){//canvas上でマウスが押された時
 			@Override
 			public void handle(MouseEvent e){
-				startCoor[0] = e.getX();
-				startCoor[1] = e.getY();
+				startCoor[0] = e.getX()/zoom;
+				startCoor[1] = e.getY()/zoom;
 				if(esGroup.getSelectedToggle() == rightEditButton){
-					movingSt = searchStation(e.getX(), e.getY());
+					movingSt = searchStation(startCoor[0], startCoor[1]);
 					if(movingSt == null){
 						draggedRect.setVisible(true);
-						draggedRect.setX(startCoor[0]);
-						draggedRect.setY(startCoor[1]);
+						draggedRect.setX(e.getX());
+						draggedRect.setY(e.getY());
 						draggedRect.setWidth(0);
 						draggedRect.setHeight(0);
 						movingStList.clear();
@@ -768,27 +768,28 @@ public class UIController implements Initializable{
 					if(e.getButton()!=MouseButton.PRIMARY) {
 						return;
 					}
+					final double[] cc = {e.getX()/zoom, e.getY()/zoom}; //zoomを考慮した現在のマウス座標
 					if(movingSt != null){//特定の駅が選択されている時
 						//movingSt.setPoint(e.getX(), e.getY());
 						for(MvSta ms: movingStList){
-							ms.sta.setPoint(ms.start[0] + e.getX() - startCoor[0], ms.start[1] + e.getY() - startCoor[1]);
+							ms.sta.setPoint(ms.start[0] + cc[0] - startCoor[0], ms.start[1] + cc[1] - startCoor[1]);
 						}
 						//領域の自動拡大
 						if(canvas.getWidth() - e.getX() < canvasMargin) canvas.setWidth(e.getX() + canvasMargin);
 						if(canvas.getHeight() - e.getY() < canvasMargin) canvas.setHeight(e.getY() + canvasMargin);
 						lineDraw();
 					}else{//特定の駅が選択されているわけではないとき
-						if(e.getX() - startCoor[0] <= 0){//符号の反転が必要
+						if(e.getX() - startCoor[0]*zoom <= 0){//符号の反転が必要
 							draggedRect.setX(e.getX());
-							draggedRect.setWidth(startCoor[0] - e.getX());
+							draggedRect.setWidth(startCoor[0]*zoom - e.getX());
 						}else{//反転必要なし
-							draggedRect.setWidth(e.getX() - startCoor[0]);
+							draggedRect.setWidth(e.getX() - startCoor[0]*zoom);
 						}
-						if(e.getY() - startCoor[1] <= 0){
+						if(e.getY() - startCoor[1]*zoom <= 0){
 							draggedRect.setY(e.getY());
-							draggedRect.setHeight(startCoor[1] - e.getY());
+							draggedRect.setHeight(startCoor[1]*zoom - e.getY());
 						}else{
-							draggedRect.setHeight(e.getY() - startCoor[1]);
+							draggedRect.setHeight(e.getY() - startCoor[1]*zoom);
 						}
 					}
 				}else{//leftEditbuttonが選択されている状態
@@ -800,11 +801,12 @@ public class UIController implements Initializable{
 			@Override
 			public void handle(MouseEvent e){
 				if(esGroup.getSelectedToggle() == rightEditButton){
+					final double[] cc = {e.getX()/zoom, e.getY()/zoom}; //zoomを考慮した現在のマウス座標
 					if(movingSt != null){//特定の駅が選択されている時
 						if(e.getButton()!=MouseButton.PRIMARY) {
 							return;
 						}
-						double[] gridedPos = getGridedPoint(e.getX(), e.getY());
+						double[] gridedPos = getGridedPoint(cc[0], cc[1]);
 						double mouseX = gridedPos[0];
 						double mouseY = gridedPos[1];
 						for(MvSta ms: movingStList){
@@ -817,7 +819,6 @@ public class UIController implements Initializable{
 							if(! ms.isSet || Math.abs(ms.start[0] - ms.sta.getPoint()[0]) > 0.5  || 
 									Math.abs(ms.start[1] - ms.sta.getPoint()[1]) > 0.5){
 								shouldBePushed = true;
-								//System.out.println(ms.start[0]+","+ms.sta.getPoint()[0]+","+ms.start[1]+","+ms.sta.getPoint()[1]);
 								break;
 							}
 						}
@@ -837,15 +838,13 @@ public class UIController implements Initializable{
 								}
 							}
 						}
-						canvasOriginal[0] = x_largest + canvasMargin;
-						canvasOriginal[1] = y_largest + canvasMargin;
-						canvas.setWidth(x_largest + canvasMargin);
-						canvas.setHeight(y_largest + canvasMargin);
+						canvasOriginal[0] = x_largest + canvasMargin/zoom;
+						canvasOriginal[1] = y_largest + canvasMargin/zoom;
 						lineDraw();
 					}else{//特定の駅が選択されているわけではないとき
 						draggedRect.setVisible(false);
-						movingStList = searchStation(draggedRect.getX(), draggedRect.getY(),
-								draggedRect.getWidth(), draggedRect.getHeight());
+						movingStList = searchStation(draggedRect.getX()/zoom, draggedRect.getY()/zoom,
+								draggedRect.getWidth()/zoom, draggedRect.getHeight()/zoom);
 						lineDraw();
 					}
 				}else{
@@ -1201,15 +1200,11 @@ public class UIController implements Initializable{
 					if(esGroup.getSelectedToggle() == rightEditButton){
 						rightPane.setVisible(true);
 						leftPane.setVisible(false);
-						ZoomSlider.setDisable(true);
 						selectSomething(true);
 						lineDraw();
 					}else if(esGroup.getSelectedToggle() == leftEditButton){
 						rightPane.setVisible(false);
 						leftPane.setVisible(true);
-						ZoomSlider.setDisable(false);
-						zoom = 1;
-						ZoomSlider.setValue(0);
 						selectSomething(false);
 						mapDraw();
 					}
@@ -1758,7 +1753,7 @@ public class UIController implements Initializable{
 		ZoomSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
 			double d = ZoomSlider.getValue();
 			zoom = Math.pow(2, d);
-			mapDraw();
+			ReDraw();
 		});
 	}
 	
@@ -1973,9 +1968,9 @@ public class UIController implements Initializable{
 	}
 	void lineDraw(){
 		gc.restore();
-		gc.setTransform(1, 0, 0, 1, 0, 0);
-		canvas.setWidth(canvasOriginal[0]);
-		canvas.setHeight(canvasOriginal[1]);
+		gc.setTransform(zoom, 0, 0, zoom, 0, 0);
+		canvas.setWidth(canvasOriginal[0]*zoom);
+		canvas.setHeight(canvasOriginal[1]*zoom);
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
 		//まずグリッドを描画する。
 		drawGrid();
@@ -2972,6 +2967,9 @@ public class UIController implements Initializable{
 		resetParams();//適切にGUIパラメータを再セット。
 		rightEditButton.setSelected(true);//読み込み時は路線編集モードにする。
 		isLoading = false;
+		// zoomをリセット
+		zoom = 1;
+		ZoomSlider.setValue(0);
 		lineDraw();
 	}
 	void saveProp(Properties p, ArrayList<Image> images) throws IOException{//データの保存を行う。
