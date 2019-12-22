@@ -90,6 +90,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -132,7 +133,6 @@ public class UIController implements Initializable{
 	private Line line;
 	private Station movingSt;
 	private ObservableList<MvSta> movingStList = FXCollections.observableArrayList();
-	private boolean firstSet = false;//移動前の駅が固定座標だったか否か
 	private FreeItem movingItem = null;
 	private GraphicsContext gc;
 	private double y_largest = 0;
@@ -734,13 +734,9 @@ public class UIController implements Initializable{
 						draggedRect.setHeight(0);
 						movingStList.clear();
 					}else{
-						firstSet = movingSt.isSet();
 						startCoor[0] = movingSt.getPointUS()[0];//駅移動時の開始座標は開始時のマウス座標ではなく駅座標にする。
 						startCoor[1] = movingSt.getPointUS()[1];
-						boolean contain = false;
-						for(MvSta ms: movingStList){
-							if(ms.sta == movingSt) contain = true;
-						}
+						boolean contain = movingStList.stream().filter(ms -> ms.sta==movingSt).count()>0;
 						if(contain && shortCutKeyPressed){//movingStListから選択されたものを削除する
 							//ConcurrentModificationExceptionを回避するためにIteratorを使う
 							Iterator<MvSta> iter = movingStList.iterator();
@@ -769,6 +765,9 @@ public class UIController implements Initializable{
 			@Override
 			public void handle(MouseEvent e){
 				if(esGroup.getSelectedToggle() == rightEditButton){
+					if(e.getButton()!=MouseButton.PRIMARY) {
+						return;
+					}
 					if(movingSt != null){//特定の駅が選択されている時
 						//movingSt.setPoint(e.getX(), e.getY());
 						for(MvSta ms: movingStList){
@@ -802,6 +801,9 @@ public class UIController implements Initializable{
 			public void handle(MouseEvent e){
 				if(esGroup.getSelectedToggle() == rightEditButton){
 					if(movingSt != null){//特定の駅が選択されている時
+						if(e.getButton()!=MouseButton.PRIMARY) {
+							return;
+						}
 						double[] gridedPos = getGridedPoint(e.getX(), e.getY());
 						double mouseX = gridedPos[0];
 						double mouseY = gridedPos[1];
