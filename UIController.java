@@ -190,7 +190,6 @@ public class UIController implements Initializable{
 	@FXML ComboBox<StopMark> re_mark_CB;
 	@FXML ComboBox<StopMark> re_staMark_CB;
 	@FXML ComboBox<DoubleArrayWrapper> re_linePattern_CB;
-	@FXML ComboBox<String> re_staPMuki_CB;
 	@FXML ComboBox<String> re_staPStyle_CB;
 	@FXML ComboBox<String> RouteStyle;
 	@FXML ComboBox<String> staStyle;
@@ -224,15 +223,25 @@ public class UIController implements Initializable{
 	@FXML ToggleButton leftEditButton;
 	@FXML ToggleButton rightEditButton;
 	@FXML ToggleButton re_staPShift_TB;
-	@FXML RadioButton tateTop;
-	@FXML RadioButton tateBottom;
-	@FXML RadioButton yokoLeft;
-	@FXML RadioButton yokoRight;
-	@FXML RadioButton staTateBottom;
-	@FXML RadioButton staTateTop;
-	@FXML RadioButton staYokoRight;
-	@FXML RadioButton staYokoLeft;
-	@FXML RadioButton staObeyLine;
+	@FXML ToggleButton lineTop;
+	@FXML ToggleButton lineBottom;
+	@FXML ToggleButton lineRight;
+	@FXML ToggleButton lineLeft;
+	@FXML ToggleButton lineCenter;
+	@FXML ToggleButton lineYoko;
+	@FXML ToggleButton lineTate;
+	@FXML ToggleGroup lineTextMuki;
+	@FXML ToggleGroup lineTextLocation;
+	@FXML ToggleButton staTop;
+	@FXML ToggleButton staBottom;
+	@FXML ToggleButton staRight;
+	@FXML ToggleButton staLeft;
+	@FXML ToggleButton staCenter;
+	@FXML ToggleButton staYoko;
+	@FXML ToggleButton staTate;
+	@FXML ToggleButton staObeyLine;
+	@FXML ToggleGroup staTextMuki;
+	@FXML ToggleGroup staTextLocation;
 	@FXML Rectangle draggedRect;
 	@FXML ScrollPane canvasPane;
 	@FXML Slider ZoomSlider;
@@ -339,17 +348,12 @@ public class UIController implements Initializable{
 			}
 		});
 		//駅名文字列の向きに関するトグルボタンの設定（路線単位）
-		ToggleGroup mukiGroup = new ToggleGroup();
-		tateTop.setToggleGroup(mukiGroup);
-		tateBottom.setToggleGroup(mukiGroup);
-		yokoRight.setToggleGroup(mukiGroup);
-		yokoLeft.setToggleGroup(mukiGroup);
-		tateBottom.setSelected(true);
-		mukiGroup.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
+		lineTextLocation.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					int RouteIndex = RouteTable.getSelectionModel().getSelectedIndex();
 					int newT = -1;
 					int oldT = -1;
+					/*
 					if(old_toggle == tateBottom) oldT = Line.BOTTOM;
 					if(old_toggle == tateTop) oldT = Line.TOP;
 					if(old_toggle == yokoLeft) oldT = Line.LEFT;
@@ -358,6 +362,7 @@ public class UIController implements Initializable{
 					if(new_toggle == tateTop) newT = Line.TOP;
 					if(new_toggle == yokoLeft) newT = Line.LEFT;
 					if(new_toggle == yokoRight) newT = Line.RIGHT;
+					*/
 					if(RouteIndex == -1){
 						Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
 						alert.getDialogPane().setContentText("路線を選択してください。");
@@ -383,10 +388,12 @@ public class UIController implements Initializable{
 						StationList.getSelectionModel().selectLast();
 						StationList.setEditable(true);
 						//トグルの選択と駅名表示位置設定
+						/*
 						if(lineList.get(index).getNameLocation() == Line.BOTTOM) mukiGroup.selectToggle(tateBottom);
 						if(lineList.get(index).getNameLocation() == Line.TOP) mukiGroup.selectToggle(tateTop);
 						if(lineList.get(index).getNameLocation() == Line.RIGHT) mukiGroup.selectToggle(yokoRight);
 						if(lineList.get(index).getNameLocation() == Line.LEFT) mukiGroup.selectToggle(yokoLeft);
+						*/
 						RouteSize.getValueFactory().setValue(lineList.get(index).getNameSize());//サイズ設定
 						RouteStyle.getSelectionModel().select(lineList.get(index).getNameStyle());//style設定
 						RouteColor.setValue(lineList.get(index).getNameColor());//色設定
@@ -559,14 +566,8 @@ public class UIController implements Initializable{
 				lineDraw();
 			}
 		});
-		ToggleGroup staMukiGroup = new ToggleGroup();
-		staTateBottom.setToggleGroup(staMukiGroup);
-		staTateTop.setToggleGroup(staMukiGroup);
-		staYokoRight.setToggleGroup(staMukiGroup);
-		staYokoLeft.setToggleGroup(staMukiGroup);
-		staObeyLine.setToggleGroup(staMukiGroup);
 		staObeyLine.setSelected(true);
-		staMukiGroup.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
+		staTextLocation.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 					int indexS = StationList.getSelectionModel().getSelectedIndex();
@@ -574,6 +575,7 @@ public class UIController implements Initializable{
 						//undoRedoのpush
 						int oldT = 0;
 						int newT = 0;
+						/*
 						if(old_toggle == staTateTop) oldT = Station.TEXT_TATE_TOP;
 						if(old_toggle == staTateBottom) oldT = Station.TEXT_TATE_BOTTOM;
 						if(old_toggle == staYokoLeft) oldT = Station.TEXT_YOKO_LEFT;
@@ -584,6 +586,7 @@ public class UIController implements Initializable{
 						if(new_toggle == staYokoLeft) newT = Station.TEXT_YOKO_LEFT;
 						if(new_toggle == staYokoRight) newT = Station.TEXT_YOKO_RIGHT;
 						if(new_toggle == staObeyLine) newT = Station.TEXT_UNSET;
+						*/
 						if(oldT == lineList.get(indexR).getStations().get(indexS).getMuki())
 							urManager.push(lineList.get(indexR).getStations().get(indexS).getMukiProperty(), oldT, newT);
 						//変更処理
@@ -706,11 +709,13 @@ public class UIController implements Initializable{
 					int indexS = StationList.getSelectionModel().getSelectedIndex();
 					if(indexR != -1 && indexS != -1){
 						Station s = lineList.get(indexR).getStations().get(indexS);
+						/*
 						if(s.getMuki() == Station.TEXT_TATE_TOP) staMukiGroup.selectToggle(staTateTop);
 						if(s.getMuki() == Station.TEXT_TATE_BOTTOM) staMukiGroup.selectToggle(staTateBottom);
 						if(s.getMuki() == Station.TEXT_YOKO_LEFT) staMukiGroup.selectToggle(staYokoLeft);
 						if(s.getMuki() == Station.TEXT_YOKO_RIGHT) staMukiGroup.selectToggle(staYokoRight);
 						if(s.getMuki() == Station.TEXT_UNSET) staMukiGroup.selectToggle(staObeyLine);
+						*/
 						staSize.getValueFactory().setValue(s.getNameSize());
 						staStyle.getSelectionModel().select(s.getNameStyle());
 						staCurveConnection.setDisable(!lineList.get(indexR).isCurvable(indexS));
@@ -1555,16 +1560,6 @@ public class UIController implements Initializable{
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
 			int indexR = R_RouteTable.getSelectionModel().getSelectedIndex();
 			if(indexR != -1 && indexK != -1 && indexS != -1){
-				if(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki() == Station.TEXT_TATE_BOTTOM) 
-					re_staPMuki_CB.getSelectionModel().select("縦-下付き");
-				if(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki() == Station.TEXT_TATE_TOP) 
-					re_staPMuki_CB.getSelectionModel().select("縦-上付き");
-				if(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki() == Station.TEXT_YOKO_LEFT) 
-					re_staPMuki_CB.getSelectionModel().select("横-左付き");
-				if(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki() == Station.TEXT_YOKO_RIGHT) 
-					re_staPMuki_CB.getSelectionModel().select("横-右付き");
-				if(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki() == Station.TEXT_UNSET) 
-					re_staPMuki_CB.getSelectionModel().select("路線準拠");
 				re_staPSize_SP.getValueFactory().setValue(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getNameSize());
 				re_staPStyle_CB.getSelectionModel().select(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getNameStyle());
 				re_staPShift_TB.setSelected(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().shiftBasedOnStation());
@@ -1574,35 +1569,6 @@ public class UIController implements Initializable{
 				re_staLAY_SP.getValueFactory().setValue(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getShift()[1]);
 				re_staMark_CB.setValue(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getMark());
 			}
-		});
-		ObservableList<String> re_staPMuki_CB_Options = FXCollections.observableArrayList("縦-下付き","縦-上付き",
-				"横-右付き","横-左付き", "路線準拠");
-		re_staPMuki_CB.setItems(re_staPMuki_CB_Options);
-		re_staPMuki_CB.valueProperty().addListener((obs, oldVal, newVal) -> {
-			int indexS = tStaList.getSelectionModel().getSelectedIndex();
-			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
-			int indexR = R_RouteTable.getSelectionModel().getSelectedIndex();
-			if(indexS != -1 && indexK != -1 && indexR != -1){
-				int oldT = -1;
-				int newT = -1;
-				if(oldVal != null){
-					if(oldVal.equals("縦-下付き")) oldT = Station.TEXT_TATE_BOTTOM;
-					if(oldVal.equals("縦-上付き")) oldT = Station.TEXT_TATE_TOP;
-					if(oldVal.equals("横-左付き")) oldT = Station.TEXT_YOKO_LEFT;
-					if(oldVal.equals("横-右付き")) oldT = Station.TEXT_YOKO_RIGHT;
-					if(oldVal.equals("路線準拠")) oldT = Station.TEXT_UNSET;
-				}
-				if(newVal.equals("縦-下付き")) newT = Station.TEXT_TATE_BOTTOM;
-				if(newVal.equals("縦-上付き")) newT = Station.TEXT_TATE_TOP;
-				if(newVal.equals("横-左付き")) newT = Station.TEXT_YOKO_LEFT;
-				if(newVal.equals("横-右付き")) newT = Station.TEXT_YOKO_RIGHT;
-				if(newVal.equals("路線準拠")) newT = Station.TEXT_UNSET;
-				if(oldT == lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMuki())
-					urManager.push(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().getMukiProperty(),
-							oldT, newT);
-				lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getSta().setMuki(newT);
-			}
-			mapDraw();
 		});
 		re_staPSize_SP.setEditable(true);
 		re_staPSize_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, 0, 1));
