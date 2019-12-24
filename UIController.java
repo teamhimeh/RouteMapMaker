@@ -1971,7 +1971,7 @@ public class UIController implements Initializable{
 		gc.setTransform(zoom, 0, 0, zoom, 0, 0);
 		canvas.setWidth(canvasOriginal[0]*zoom);
 		canvas.setHeight(canvasOriginal[1]*zoom);
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
+		gc.clearRect(0, 0, canvasOriginal[0], canvasOriginal[1]);//はじめに全領域消去
 		//まずグリッドを描画する。
 		drawGrid();
 		//各路線ごとに描画。
@@ -2053,27 +2053,27 @@ public class UIController implements Initializable{
 			// 三角形グリッド
 			// 水平線
 			double y_interval = interval * Math.sqrt(3) / 2;
-			double h = canvas.getHeight();
+			double h = canvasOriginal[1];
 			for(int i = 0; i * y_interval < h; i++){//横線
-				gc.strokeLine(0, i * y_interval, canvas.getWidth(), i * y_interval);
+				gc.strokeLine(0, i * y_interval, canvasOriginal[0], i * y_interval);
 			}
 			int start_idx = (int) (Math.ceil(h/interval/Math.sqrt(3)));
 			// 斜め 傾き負線
-			for(double x = -1 * start_idx * interval; x < canvas.getWidth(); x += interval) {
+			for(double x = -1 * start_idx * interval; x < canvasOriginal[0]; x += interval) {
 				gc.strokeLine(x, 0, x + h/Math.sqrt(3), h);
 			}
 			// 斜め 傾き正線
-			for(double x = 0; x < canvas.getWidth() + h/Math.sqrt(3); x += interval) {
+			for(double x = 0; x < canvasOriginal[0] + h/Math.sqrt(3); x += interval) {
 				gc.strokeLine(x - h/Math.sqrt(3), h, x , 0);
 			}
 		} else {
 			// 四角形グリッド
-			for(int i = 0; i < canvas.getHeight();){//横線
-				gc.strokeLine(0, i, canvas.getWidth(), i);
+			for(int i = 0; i < canvasOriginal[1];){//横線
+				gc.strokeLine(0, i, canvasOriginal[0], i);
 				i = i + interval;
 			}
-			for(int i = 0; i < canvas.getWidth();){//縦線
-				gc.strokeLine(i, 0, i, canvas.getHeight());
+			for(int i = 0; i < canvasOriginal[0];){//縦線
+				gc.strokeLine(i, 0, i, canvasOriginal[1]);
 				i = i + interval;
 			}
 		}
