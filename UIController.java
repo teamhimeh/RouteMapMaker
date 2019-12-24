@@ -460,7 +460,13 @@ public class UIController implements Initializable{
 				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
 				alert.getDialogPane().setContentText("駅は2番目以降に挿入してください。");
 				alert.showAndWait();
-			}else{
+			}
+			else if(line.getCurveConnection(index) && line.isCurvable(index)) {
+				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("曲線区間に駅を挿入することはできません．");
+				alert.showAndWait();
+			}
+			else{
 				int staNum = 0;
 				while(true){
 					String d = staNum + "駅";
@@ -1995,7 +2001,7 @@ public class UIController implements Initializable{
 					continue;
 				}
 				endP = line.getStations().get(i2).getPoint();
-				if(line.getCurveConnection(i2)) {
+				if(line.getCurveConnection(i2) && line.isCurvable(i2)) {
 					// ベジエ曲線での接続
 					int idx = pointSetStations.indexOf(line.getConnections().get(i2));
 					double[][] l1 = {pointSetStations.get(idx-2).station.getPoint(), startP};
