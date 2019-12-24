@@ -3342,9 +3342,6 @@ public class UIController implements Initializable{
 	boolean checkUpdate(boolean onLaunch){//アップデートがあればtrue。なければfalse。このフラグは手動で確認が行われた時用。
 		boolean nv = false;
 		URL url;
-		if(onLaunch) {
-			postUsage();
-		}
 		try {
 			url = new URL("https://spreadsheets.google.com/feeds/cells/1AzBe7Jdny2YnIW9hUixfbGBLmaj1xRGjEEl042fZ7kE/od6/public/values");
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -3358,6 +3355,8 @@ public class UIController implements Initializable{
 			 * [3]4:Description in English
 			 * [4]5:URL for description in English
 			 * [5]6:Auto-Download URL
+			 * [6]7:Usage Post用URL（本番）
+			 * [7]8:Usage Post用URL（テスト）
 			 */
 			if(conn.getResponseCode() == HttpURLConnection.HTTP_OK){
 				System.out.println("接続に問題はありません。");
@@ -3371,7 +3370,7 @@ public class UIController implements Initializable{
 				bis.close();
 				
 				//XMLの解析は別メソッドに丸投げします。
-				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ6の配列で返ってくる。
+				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ8の配列で返ってくる。
 				if(Double.parseDouble(xmlDatas[0]) > ReleaseVersion){
 					nv = true;
 					Platform.runLater(() ->{
@@ -3397,6 +3396,10 @@ public class UIController implements Initializable{
 				}
 				else {
 					System.out.println("この本体は最新バージョンです．");
+				}
+				if(onLaunch) {
+					postUsage(xmlDatas[6]);
+					//postUsage(xmlDatas[7]);
 				}
 			}else{
 				nv = true;
@@ -3433,14 +3436,15 @@ public class UIController implements Initializable{
 		return nv;
 	}
 	
-	void postUsage() {
+	void postUsage(String url_header) {
 		try {
-			URL url = new URL("https://us-central1-routemapmaker-6c324.cloudfunctions.net/registerUsage?version="
-		+ ReleaseVersion + "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
-		+ "&locale=" + Locale.getDefault().getCountry());
+			URL url = new URL(url_header + "?version=" + ReleaseVersion
+					+ "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
+					+ "&locale=" + Locale.getDefault().getCountry());
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.connect();
+			conn.getInputStream(); //これをもってHTTP接続が行われる．
 		} catch(IOException e) {
 			// usageの送信だけなので特にエラー処理はしない．
 			e.printStackTrace();
@@ -3448,7 +3452,7 @@ public class UIController implements Initializable{
 	}
 
 	String[] analyzeXML(Document document){
-		String[] data = new String[6];
+		String[] data = new String[8];
 		Element root = document.getDocumentElement();
 		NodeList children1 = root.getChildNodes();
 		for(int i1 = 0 ; i1 < children1.getLength(); i1++){
@@ -3474,6 +3478,8 @@ public class UIController implements Initializable{
 						if(categoryTitle.equals("A4")) data[3] = categoryContent;
 						if(categoryTitle.equals("A5")) data[4] = categoryContent;
 						if(categoryTitle.equals("A6")) data[5] = categoryContent;
+						if(categoryTitle.equals("A7")) data[6] = categoryContent;
+						if(categoryTitle.equals("A8")) data[7] = categoryContent;
 					}
 				}
 			}
