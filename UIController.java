@@ -3385,6 +3385,8 @@ public class UIController implements Initializable{
 			 * [5]6:Auto-Download URL
 			 * [6]7:Usage Post用URL（本番）
 			 * [7]8:Usage Post用URL（テスト）
+			 * [8]9:Error report用URL（本場）
+			 * [9]10:Error report用URL（テスト）
 			 */
 			if(conn.getResponseCode() == HttpURLConnection.HTTP_OK){
 				System.out.println("接続に問題はありません。");
@@ -3398,7 +3400,7 @@ public class UIController implements Initializable{
 				bis.close();
 				
 				//XMLの解析は別メソッドに丸投げします。
-				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ8の配列で返ってくる。
+				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ9の配列で返ってくる。
 				if(Double.parseDouble(xmlDatas[0]) > ReleaseVersion){
 					nv = true;
 					Platform.runLater(() ->{
@@ -3426,8 +3428,8 @@ public class UIController implements Initializable{
 					System.out.println("この本体は最新バージョンです．");
 				}
 				if(onLaunch) {
-					postUsage(xmlDatas[6]);
-					//postUsage(xmlDatas[7]);
+					postUsage(xmlDatas[ErrorReporter.isDebugBuild() ? 7 : 6]);
+					ErrorReporter.setReportURL(xmlDatas[ErrorReporter.isDebugBuild() ? 9 : 8], ReleaseVersion);
 				}
 			}else{
 				nv = true;
@@ -3480,7 +3482,7 @@ public class UIController implements Initializable{
 	}
 
 	String[] analyzeXML(Document document){
-		String[] data = new String[8];
+		String[] data = new String[10];
 		Element root = document.getDocumentElement();
 		NodeList children1 = root.getChildNodes();
 		for(int i1 = 0 ; i1 < children1.getLength(); i1++){
@@ -3508,6 +3510,8 @@ public class UIController implements Initializable{
 						if(categoryTitle.equals("A6")) data[5] = categoryContent;
 						if(categoryTitle.equals("A7")) data[6] = categoryContent;
 						if(categoryTitle.equals("A8")) data[7] = categoryContent;
+						if(categoryTitle.equals("A9")) data[8] = categoryContent;
+						if(categoryTitle.equals("A10")) data[9] = categoryContent;
 					}
 				}
 			}
