@@ -22,7 +22,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -3468,9 +3470,18 @@ public class UIController implements Initializable{
 	
 	void postUsage(String url_header) {
 		try {
+			//macアドレスの取得
+			NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+			byte[]mac = network.getHardwareAddress();
+			StringBuilder mac_sb = new StringBuilder();
+			for (int i = 0; i < mac.length; i++) {
+				mac_sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+			}
+			
 			URL url = new URL(url_header + "?version=" + ReleaseVersion
 					+ "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
-					+ "&locale=" + Locale.getDefault().getCountry());
+					+ "&locale=" + Locale.getDefault().getCountry()
+					+ "&mac=" + mac_sb.toString());
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.connect();
