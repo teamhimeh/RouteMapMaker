@@ -2271,20 +2271,31 @@ public class UIController implements Initializable{
 				int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
 				double[] end = new double[2];
 				//まずはedgeAを考えましょう。
-				double[][] so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
-						lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
+				//最初の区間からカーブすることがある
+				final boolean next_curve = lineList.get(k).isCurvable(startPoint+1) 
+						&& lineList.get(k).getCurveConnection(startPoint+1);
+				double[][] so;
+				if(next_curve) {
+					//この場合，路線自体はstartPointより前から始まっている
+					so = shiftPoint(lineList.get(k).getStations().get(startPoint-1).getPointUS(),
+							lineList.get(k).getStations().get(startPoint).getPointUS(), zure);
+				} else {
+					so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
+							lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
+				}
+				end[0] = so[next_curve ? 1 : 0][0];
+				end[1] = so[next_curve ? 1 : 0][1];
 				double edgeALength = lineList.get(k).getTrains().get(i).getEdgeA();
 				int[] staShift = lineList.get(k).getTrains().get(i).getStops().get(0).getShift();//スタートなのでindex0
-				//so[0]にstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
-				so[0][0] = so[0][0] + staShift[0];
-				so[0][1] = so[0][1] + staShift[1];
-				lineList.get(k).getStations().get(startPoint).setShiftCoor(so[0]);
+				//endにstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
+				end[0] = end[0] + staShift[0];
+				end[1] = end[1] + staShift[1];
+				lineList.get(k).getStations().get(startPoint).setShiftCoor(end.clone());
 				//edgeAを考慮する。
-				end[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
+				end[0] = end[0] - (so[1][0] - so[0][0]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-				end[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
+				end[1] = end[1] - (so[1][1] - so[0][1]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-				//lineList.get(k).getStations().get(startPoint).setShiftCoor(start.clone());
 				ArrayList<Pair<double[], Boolean>> staPoints = 
 						new ArrayList<Pair<double[], Boolean>>(); //<座標, curve>
 				//最初の点もstaPointsに保存する．曲線描画で必要になることがあるため．
@@ -2307,9 +2318,9 @@ public class UIController implements Initializable{
 								Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
 						lineList.get(k).getStations().get(endPoint).setShiftCoor(ll[1]);
 					} else {
-						boolean next_curve = lineList.get(k).isCurvable(h+1) 
+						final boolean nc = lineList.get(k).isCurvable(h+1) 
 								&& lineList.get(k).getCurveConnection(h+1);
-						if(lineList.get(k).getStations().get(h).isSet() && !curve && !next_curve) {
+						if(lineList.get(k).getStations().get(h).isSet() && !curve && !nc) {
 							//この場合は歪みを防ぐため特殊な処理が必要。連立方程式を用意してその解を採用する。
 							double[][] zhA = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
 									lineList.get(k).getStations().get(h).getPoint(), zure);
@@ -2342,8 +2353,19 @@ public class UIController implements Initializable{
 						gc.beginPath();
 						gc.moveTo(p[0], p[1]);
 					}else if(curve) {
-						// ベジエ曲線での接続
-						double[][] l1 = {staPoints.get(h-2).getKey(), staPoints.get(h-1).getKey()};
+						double[][] l1 = new double[2][];
+						//ベジエ曲線での接続
+						//運転系統が曲線区間から始まる場合，始点側の傾きを推測する必要がある．
+						if(h==1) {
+							l1[0] = shiftPoint(lineList.get(k).getStations().get(startPoint-1).getPointUS(),
+									lineList.get(k).getStations().get(startPoint).getPointUS(), zure)[0];
+							staShift = train.getStops().get(0).getShift();
+							l1[0][0] += staShift[0];
+							l1[0][1] += staShift[1];
+						} else {
+							l1[0] = staPoints.get(h-2).getKey();
+						}
+						l1[1] = staPoints.get(h-1).getKey();
 						double[][] l2 = {p, staPoints.get(h+1).getKey()};
 						double[] cp = calcIntersection(l1, l2); //control point
 						gc.quadraticCurveTo(cp[0], cp[1], p[0], p[1]);
