@@ -11,7 +11,7 @@ public class ErrorReporter {
 	private static ErrorReporter er = new ErrorReporter();
 	private String reportUrl;
 	private double version;
-	private static boolean debug = true;
+	private static boolean debug = false;
 	
 	public static boolean isDebugBuild() {
 		return debug;

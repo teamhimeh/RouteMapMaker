@@ -143,7 +143,7 @@ public class UIController implements Initializable{
 	private final double pointRadius = 3;//駅の点の半径
 	final double canvasMargin = 200;
 	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
-	private final double ReleaseVersion = 12;//リリースバージョン。ユーザーへの案内用
+	private final double ReleaseVersion = 12.1;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
 	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
