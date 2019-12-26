@@ -44,6 +44,11 @@ public class Main extends Application {
 					t.consume();
 				}
 			});
+			//キャッチされない広域例外はここまで上がってくる
+			Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+				e.printStackTrace();
+				ErrorReporter.report(e);
+			});
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
