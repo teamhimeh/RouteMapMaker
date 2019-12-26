@@ -11,10 +11,11 @@ import javafx.beans.property.StringProperty;
 
 public class Station {//駅に関する情報を保持するクラス
 	
-	public static final int TEXT_YOKO_RIGHT = 10;
-	public static final int TEXT_YOKO_LEFT = 9;
-	public static final int TEXT_TATE_BOTTOM = 11;
-	public static final int TEXT_TATE_TOP = 12;
+	public static final int TEXT_RIGHT = 10;
+	public static final int TEXT_LEFT = 9;
+	public static final int TEXT_BOTTOM = 11;
+	public static final int TEXT_TOP = 12;
+	public static final int TEXT_CENTER = 13;
 	public static final int TEXT_UNSET = -11;
 	
 	public static final int REGULAR = 0;
@@ -28,7 +29,8 @@ public class Station {//駅に関する情報を保持するクラス
 	private DoubleProperty x = new SimpleDoubleProperty(0.0);//固定座標x
 	private DoubleProperty y = new SimpleDoubleProperty(0.0);//固定座標y
 	private int stationConnection = 0;
-	private IntegerProperty textMuki = new SimpleIntegerProperty(TEXT_UNSET);//駅ごとの縦書き横書き指定
+	private IntegerProperty textLocation = new SimpleIntegerProperty(TEXT_UNSET);//駅ごとの駅名表示位置
+	private BooleanProperty tategaki = new SimpleBooleanProperty(true);//縦書きか横書きか。trueなら縦書き
 	private IntegerProperty size = new SimpleIntegerProperty(0);//駅ごとに設定される文字サイズ。0は経路準拠
 	private IntegerProperty style = new SimpleIntegerProperty(STYLE_UNSET);//駅ごとに設定される文字スタイル
 	private IntegerProperty nameX = new SimpleIntegerProperty(0);//駅名の描画位置のズレ
@@ -107,14 +109,23 @@ public class Station {//駅に関する情報を保持するクラス
 			return p;
 		}
 	}
-	public void setMuki(int muki){
-		this.textMuki.set(muki);
+	public void setTextLocation(int muki){
+		this.textLocation.set(muki);
 	}
-	public IntegerProperty getMukiProperty(){
-		return this.textMuki;
+	public IntegerProperty getTextLocationProperty(){
+		return this.textLocation;
 	}
-	public int getMuki(){
-		return textMuki.get();
+	public int getTextLocation(){
+		return textLocation.get();
+	}
+	public void setTategaki(boolean b) {
+		tategaki.set(b);
+	}
+	public BooleanProperty getTategakiProperty() {
+		return tategaki;
+	}
+	public boolean isTategaki() {
+		return tategaki.get();
 	}
 	public double[] getPointUS(){//isSetを考慮しません。使うのは全ての座標が決定した後にしましょう。
 		double[] p = new double[2];

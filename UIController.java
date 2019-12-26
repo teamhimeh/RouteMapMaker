@@ -142,7 +142,7 @@ public class UIController implements Initializable{
 	private ToggleGroup esGroup;//どちらの編集モードかのToggleGroup
 	private final double pointRadius = 3;//駅の点の半径
 	final double canvasMargin = 200;
-	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
+	private final double version = 9;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
 	private final double ReleaseVersion = 12.1;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
@@ -575,30 +575,23 @@ public class UIController implements Initializable{
 			}
 		});
 		staObeyLine.setSelected(true);
+		Toggle[] staTextLocationToggles = {staLeft, staRight, staBottom, staTop};
 		staTextLocation.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 					int indexS = StationList.getSelectionModel().getSelectedIndex();
-					if(indexR != -1 && indexS != -1){
-						//undoRedoのpush
-						int oldT = 0;
-						int newT = 0;
-						/*
-						if(old_toggle == staTateTop) oldT = Station.TEXT_TATE_TOP;
-						if(old_toggle == staTateBottom) oldT = Station.TEXT_TATE_BOTTOM;
-						if(old_toggle == staYokoLeft) oldT = Station.TEXT_YOKO_LEFT;
-						if(old_toggle == staYokoRight) oldT = Station.TEXT_YOKO_RIGHT;
-						if(old_toggle == staObeyLine) oldT = Station.TEXT_UNSET;
-						if(new_toggle == staTateTop) newT = Station.TEXT_TATE_TOP;
-						if(new_toggle == staTateBottom) newT = Station.TEXT_TATE_BOTTOM;
-						if(new_toggle == staYokoLeft) newT = Station.TEXT_YOKO_LEFT;
-						if(new_toggle == staYokoRight) newT = Station.TEXT_YOKO_RIGHT;
-						if(new_toggle == staObeyLine) newT = Station.TEXT_UNSET;
-						*/
-						if(oldT == lineList.get(indexR).getStations().get(indexS).getMuki())
-							urManager.push(lineList.get(indexR).getStations().get(indexS).getMukiProperty(), oldT, newT);
+					int oldT = Arrays.asList(staTextLocationToggles).indexOf(old_toggle);
+					int newT = Arrays.asList(staTextLocationToggles).indexOf(new_toggle);
+					if(indexR == -1 || indexS == -1 || oldT == -1 || newT == -1) {
+						return;
+					}
+					oldT += Station.TEXT_LEFT;
+					newT += Station.TEXT_LEFT;
+					Station sta = lineList.get(indexR).getStations().get(indexS);
+					if(oldT == lineList.get(indexR).getStations().get(indexS).getTextLocation()) {
+						urManager.push(sta.getTextLocationProperty(), oldT, newT);
 						//変更処理
-						lineList.get(indexR).getStations().get(indexS).setMuki(newT);
+						sta.setTextLocation(newT);
 					}
 					lineDraw();
 				});
@@ -671,7 +664,7 @@ public class UIController implements Initializable{
 					//以下初期設定。clone使いたいけどshiftCoorでトラブりそうなのでやめる
 					newSta.setPoint(oldSta.getPoint()[0] + 50, oldSta.getPoint()[1] + 50);
 					newSta.setConnection(oldSta.getConnection());
-					newSta.setMuki(oldSta.getMuki());
+					newSta.setTextLocation(oldSta.getTextLocation());
 					newSta.setNameSize(oldSta.getNameSize());
 					newSta.setNameStyle(oldSta.getNameStyle());
 					//描画位置設定は引き継がないことにする
@@ -2057,82 +2050,59 @@ public class UIController implements Initializable{
 		gc.setFill(Color.BLACK);
 		gc.setFont(Font.getDefault());
 		//先にdrawnフラグを全てfalseにする
-		for(Line l: lineList){
-			for(Station sta: l.getStations()){
-				sta.setDrawn(false);
+		for(Line l : lineList) {
+			for(Station station : l.getStations()) {
+				station.setDrawn(false);
 			}
 		}
-		for(int i = 0; i < lineList.size(); i++){
-			for(int h = 0; h < lineList.get(i).getStations().size(); h++){
-				int size;
-				int style;
-				int muki;
+		//駅名描画
+		for(Line l : lineList) {
+			for(Station station : l.getStations()) {
+				int size = station.getNameSize()==0 ? l.getNameSize() : station.getNameSize();
+				if(size == -1 || station.isDrawn()) {
+					//サイズが-1の場合 or すでに描画されている場合は描画しない。
+					continue;
+				}
+				int style = station.getNameStyle()==Station.STYLE_UNSET ? l.getNameStyle() : station.getNameStyle();
+				boolean tate = station.getTextLocation()==Station.TEXT_UNSET ? l.isTategaki() : station.isTategaki();
+				int location;
+				if(station.getTextLocation()==Station.TEXT_UNSET ) {
+					location = l.getNameLocation();
+				} else {
+					//stationのlocation変数とLineのlocation変数は並びが異なるので，変換が必要
+					Integer[] sl = {Station.TEXT_RIGHT, Station.TEXT_LEFT, Station.TEXT_TOP, Station.TEXT_BOTTOM, Station.TEXT_CENTER};
+					location = Arrays.asList(sl).indexOf(station.getTextLocation());
+				}
+				//駅名シフト
 				int[] shift = new int[2];
-				//先にサイズを特定しよう。
-				if(lineList.get(i).getStations().get(h).getNameSize() == 0){
-					size = lineList.get(i).getNameSize();
-				}else{
-					size = lineList.get(i).getStations().get(h).getNameSize();
-				}
-				//次にスタイル
-				if(lineList.get(i).getStations().get(h).getNameStyle() == Station.STYLE_UNSET){
-					style = lineList.get(i).getNameStyle();
-				}else{
-					style = lineList.get(i).getStations().get(h).getNameStyle();
-				}
-				//駅名位置補正を決める
-				if(mode == true){//路線編集モードならshiftしない。
+				if(mode){//路線編集モードならshiftしない。
 					shift[0] = 0;
 					shift[1] = 0;
-				}else{
-					if(lineList.get(i).getStations().get(h).shiftBasedOnStation()){//駅の設定準拠
-						shift = lineList.get(i).getStations().get(h).getNameZure();
-					}else{//路線の設定準拠
-						shift = lineList.get(i).getNameZure();
-					}
+				} else if (station.shiftBasedOnStation()){//駅の設定準拠
+					shift = station.getNameZure();
+				} else {//路線の設定準拠
+					shift = l.getNameZure();
 				}
-				//駅ごとに個別設定されている場合はそちらを優先
-				if(size != -1 && lineList.get(i).getStations().get(h).isDrawn() == false){//サイズが-1の場合は描画しない。
-					if(lineList.get(i).getStations().get(h).getMuki() == Station.TEXT_UNSET){
-						if(lineList.get(i).getNameLocation() == Line.BOTTOM){
-							drawTate(i,h,size,style,Line.BOTTOM,shift);
-						}else if(lineList.get(i).getNameLocation() == Line.TOP){
-							drawTate(i,h,size,style,Line.TOP,shift);
-						}else if(lineList.get(i).getNameLocation() == Line.LEFT){
-							drawYoko(i,h,size,style,Line.LEFT,shift);
-						}else{
-							drawYoko(i,h,size,style,Line.RIGHT,shift);
-						}
-					}
-					if(lineList.get(i).getStations().get(h).getMuki() == Station.TEXT_TATE_BOTTOM){
-						drawTate(i,h,size,style,Line.BOTTOM,shift);
-					}else if(lineList.get(i).getStations().get(h).getMuki() == Station.TEXT_TATE_TOP){
-						drawTate(i,h,size,style,Line.TOP,shift);
-					}else if(lineList.get(i).getStations().get(h).getMuki() == Station.TEXT_YOKO_LEFT){
-						drawYoko(i,h,size,style,Line.LEFT,shift);
-					}else if(lineList.get(i).getStations().get(h).getMuki() == Station.TEXT_YOKO_RIGHT){
-						drawYoko(i,h,size,style,Line.RIGHT,shift);
-					}
-					lineList.get(i).getStations().get(h).setDrawn(true);
+				//System.out.println(station.getName() + ": " + tate + ", " + location);
+				if(tate) {
+					drawTate(station, size, style, location, shift, l.getNameColor());
+				} else {
+					drawYoko(station, size, style, location, shift, l.getNameColor());
 				}
+				station.setDrawn(true);
 			}
 		}
 	}
 	
-	void drawYoko(int ln, int st, int size, int style, int location, int[] shift){
+	void drawYoko(Station station, int size, int style, int location, int[] shift, Color color){
 		double sideIntv = 5;
-		double[] p;
-		if(lineList.get(ln).getStations().get(st).isSet()){
-			p = lineList.get(ln).getStations().get(st).getPoint();
-		}else{
-			p = lineList.get(ln).getStations().get(st).getInterPoint();
-		}
+		double[] p = station.getPointUS();
 		//文字スタイルの設定
 		if(style == Line.REGULAR) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.REGULAR, size));
 		if(style == Line.ITALIC) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.ITALIC, size));
 		if(style == Line.BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.REGULAR, size));
 		if(style == Line.ITALIC_BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.ITALIC, size));
-		gc.setFill(lineList.get(ln).getNameColor());//色の設定
+		gc.setFill(color);//色の設定
 		gc.setTextBaseline(VPos.BASELINE);
 		if(location == Line.LEFT){//右付き、左付きの設定
 			gc.setTextAlign(TextAlignment.RIGHT);
@@ -2141,20 +2111,15 @@ public class UIController implements Initializable{
 			gc.setTextAlign(TextAlignment.LEFT);
 			sideIntv = 5;
 		}
-		gc.fillText(lineList.get(ln).getStations().get(st).getName(), 
+		gc.fillText(station.getName(), 
 				p[0] + sideIntv + shift[0], p[1] + size / 2 + shift[1]);//X座標は要検証
 	}
-	void drawTate(int ln, int st, int size, int style, int location, int[] shift){
-		double[] p;
-		if(lineList.get(ln).getStations().get(st).isSet()){
-			p = lineList.get(ln).getStations().get(st).getPoint();
-		}else{
-			p = lineList.get(ln).getStations().get(st).getInterPoint();
-		}
+	void drawTate(Station station, int size, int style, int location, int[] shift, Color color){
+		double[] p = station.getPointUS();
 		StringBuilder tate = new StringBuilder();
-		for(int i = 0; i < lineList.get(ln).getStations().get(st).getName().length(); i++){
-			tate.append(lineList.get(ln).getStations().get(st).getName().charAt(i));
-			if(i != lineList.get(ln).getStations().get(st).getName().length() - 1){
+		for(int i = 0; i < station.getName().length(); i++){
+			tate.append(station.getName().charAt(i));
+			if(i != station.getName().length() - 1){
 				tate.append("\n");//最終文字以外は改行文字を追加する。
 			}
 		}
@@ -2163,7 +2128,7 @@ public class UIController implements Initializable{
 		if(style == Line.ITALIC) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.ITALIC, size));
 		if(style == Line.BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.REGULAR, size));
 		if(style == Line.ITALIC_BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.ITALIC, size));
-		gc.setFill(lineList.get(ln).getNameColor());//色の設定
+		gc.setFill(color);//色の設定
 		gc.setTextAlign(TextAlignment.LEFT);
 		if(location == Line.TOP){//右付き、左付きの設定
 			gc.setTextBaseline(VPos.BOTTOM);
@@ -2805,17 +2770,21 @@ public class UIController implements Initializable{
 		lineList.clear();//lineListは全消去
 		rnList.clear();
 		for(int i = 0; i < numOfLines; i++){//lineの読み込み
-			lineList.add(new Line(p.getProperty("line" + String.valueOf(i) + ".lineName")));
-			rnList.add(lineList.get(i).getName());
-			lineList.get(i).getConnections().clear();//コンストラクタで生成された奴らを削除する必要がある。
+			Line line = new Line(p.getProperty("line" + String.valueOf(i) + ".lineName"));
+			lineList.add(line);
+			rnList.add(line.getName());
+			line.getConnections().clear();//コンストラクタで生成された奴らを削除する必要がある。
 			if(pVersion < 7){//上付き、下付きなど未対応のデータ
 				boolean tategaki = Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".tategaki"));
-				if(tategaki) lineList.get(i).setNameLocation(Line.BOTTOM);
-				if(! tategaki) lineList.get(i).setNameLocation(Line.RIGHT);
+				line.setNameLocation(tategaki ? Line.BOTTOM : Line.RIGHT);
+				line.setTategaki(tategaki);
+			}else if(pVersion < 9) {//縦・横とtopやbottomが分離されていないデータ
+				line.setNameLocation(Integer.valueOf(p.getProperty("line" + String.valueOf(i) + ".nameLocation")));
+				line.setTategaki(line.getNameLocation()==Line.TOP || line.getNameLocation()==Line.BOTTOM);
 			}else{
-				lineList.get(i).setNameLocation(Integer.valueOf(p.getProperty("line" + String.valueOf(i) + ".nameLocation")));
+				line.setNameLocation(Integer.valueOf(p.getProperty("line" + String.valueOf(i) + ".nameLocation")));
+				line.setTategaki(Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".tategaki")));
 			}
-			lineList.get(i).setTategaki(Boolean.valueOf(p.getProperty("line" + String.valueOf(i) + ".tategaki")));
 			lineList.get(i).setNameStyle(Integer.valueOf(p.getProperty("line" + String.valueOf(i) + ".nameStyle")));
 			lineList.get(i).setNameSize(Integer.valueOf(p.getProperty("line" + String.valueOf(i) + ".nameSize")));
 			double[] cp = new double[4];
@@ -2844,8 +2813,17 @@ public class UIController implements Initializable{
 				}
 				sta.setConnection(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".stationConnection")));
-				sta.setMuki(Integer.parseInt(p.getProperty
-						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textMuki")));
+				if(pVersion < 9) {
+					int loc = Integer.parseInt(p.getProperty
+							("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textMuki"));
+					sta.setTextLocation(loc);
+					sta.setTategaki(loc==Station.TEXT_BOTTOM || loc==Station.TEXT_TOP);
+				} else {
+					sta.setTextLocation(Integer.parseInt(p.getProperty
+							("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textLocation")));
+					sta.setTategaki(Boolean.valueOf(p.getProperty
+							("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".tategaki")));
+				}
 				sta.setNameSize(Integer.parseInt(p.getProperty
 						("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".size")));
 				sta.setNameStyle(Integer.parseInt(p.getProperty
@@ -2869,7 +2847,6 @@ public class UIController implements Initializable{
 					String b = p.getProperty
 							("line" + String.valueOf(i) + ".train" + String.valueOf(h) + ".sta" + String.valueOf(count));
 					if(a.equals(b)){
-						System.out.println("match:line-"+k+",stop-"+count);
 						lineList.get(i).getTrains().get(h).getStops().add(new TrainStop(lineList.get(i).getStations().get(k)));
 						lineList.get(i).getTrains().get(h).getStops().get(count).setShiftX(Integer.valueOf(p.getProperty
 								("line" + String.valueOf(i) + ".train" + String.valueOf(h) + ".sta" + String.valueOf(count)
@@ -2981,6 +2958,7 @@ public class UIController implements Initializable{
 		for(int i = 0; i < lineList.size(); i++){
 			p.setProperty("line" + String.valueOf(i) + ".lineName", lineList.get(i).getName());
 			p.setProperty("line" + String.valueOf(i) + ".nameLocation", String.valueOf(lineList.get(i).getNameLocation()));
+			p.setProperty("line" + String.valueOf(i) + ".tategaki",String.valueOf(lineList.get(i).isTategaki()));
 			p.setProperty("line" + String.valueOf(i) + ".nameStyle", String.valueOf(lineList.get(i).getNameStyle()));
 			p.setProperty("line" + String.valueOf(i) + ".nameSize", String.valueOf(lineList.get(i).getNameSize()));
 			p.setProperty("line" + String.valueOf(i) + ".nameColorR", String.valueOf(lineList.get(i).getNameColor().getRed()));
@@ -3009,8 +2987,10 @@ public class UIController implements Initializable{
 				}
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".stationConnection", 
 						String.valueOf(station.getConnection()));
-				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textMuki", 
-						String.valueOf(station.getMuki()));
+				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".textLocation", 
+						String.valueOf(station.getTextLocation()));
+				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".tategaki", 
+						String.valueOf(station.isTategaki()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".size", 
 						String.valueOf(station.getNameSize()));
 				p.setProperty("line" + String.valueOf(i) + ".sta" + String.valueOf(h) + ".style", 
