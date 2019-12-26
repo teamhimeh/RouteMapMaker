@@ -1199,8 +1199,10 @@ public class UIController implements Initializable{
 		//メニューバー横にある２つのトグルボタンについて。編集領域を切り替える。
 		esGroup = new ToggleGroup();
 		rightEditButton.setToggleGroup(esGroup);
-		rightEditButton.setSelected(true);
 		leftEditButton.setToggleGroup(esGroup);
+		rightEditButton.setSelected(true);
+		rightPane.setVisible(true);
+		leftPane.setVisible(false);
 		esGroup.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					if(esGroup.getSelectedToggle() == rightEditButton){
