@@ -431,8 +431,8 @@ public class ChangeAllController implements Initializable{
 			}
 			uic.ReDraw();
 		});
-		ObservableList<Integer> staMukiList = FXCollections.observableArrayList(Station.TEXT_TATE_BOTTOM,Station.TEXT_TATE_TOP,
-				Station.TEXT_YOKO_RIGHT,Station.TEXT_YOKO_LEFT,Station.TEXT_UNSET);
+		ObservableList<Integer> staMukiList = FXCollections.observableArrayList(Station.TEXT_BOTTOM,Station.TEXT_TOP,
+				Station.TEXT_RIGHT,Station.TEXT_LEFT,Station.TEXT_UNSET);
 		D_staMuki.setItems(staMukiList);
 		D_staMuki.setCellFactory(new staMukiCell());
 		D_staMuki.setButtonCell(new staMukiCell().call(null));
@@ -443,7 +443,7 @@ public class ChangeAllController implements Initializable{
 					for(Line line: D_LineList.getSelectionModel().getSelectedItems()){
 						for(Station sta: line.getStations()){
 							if(D_staMuki.getSelectionModel().getSelectedItem() != null)
-								sta.setMuki(D_staMuki.getSelectionModel().getSelectedItem().intValue());
+								sta.setTextLocation(D_staMuki.getSelectionModel().getSelectedItem().intValue());
 						}
 					}
 				}else{
@@ -454,7 +454,7 @@ public class ChangeAllController implements Initializable{
 					}else{
 						for(Station sta: D_StaList.getSelectionModel().getSelectedItems()){
 							if(D_staMuki.getSelectionModel().getSelectedItem() != null)
-								sta.setMuki(D_staMuki.getSelectionModel().getSelectedItem().intValue());
+								sta.setTextLocation(D_staMuki.getSelectionModel().getSelectedItem().intValue());
 						}
 					}
 				}
@@ -643,10 +643,10 @@ public class ChangeAllController implements Initializable{
 						setGraphic(null);
 					} else {
 						Color textColor = Color.BLACK;//色は共通規格
-						if(item.getMuki() == Station.TEXT_TATE_BOTTOM) textColor = Color.DARKBLUE;
-						if(item.getMuki() == Station.TEXT_TATE_TOP) textColor = Color.DARKRED;
-						if(item.getMuki() == Station.TEXT_YOKO_RIGHT) textColor = Color.DARKGREEN;
-						if(item.getMuki() == Station.TEXT_YOKO_LEFT) textColor = Color.DARKSALMON;
+						if(item.getTextLocation() == Station.TEXT_BOTTOM) textColor = Color.DARKBLUE;
+						if(item.getTextLocation() == Station.TEXT_TOP) textColor = Color.DARKRED;
+						if(item.getTextLocation() == Station.TEXT_RIGHT) textColor = Color.DARKGREEN;
+						if(item.getTextLocation() == Station.TEXT_LEFT) textColor = Color.DARKSALMON;
 						setTextFill(textColor);
 						if(item.getNameSize() == -1) setTextFill(Color.GRAY);//非表示設定ならグレー
 						setText(item.getName());
@@ -667,19 +667,19 @@ public class ChangeAllController implements Initializable{
 						setText(null);
 						setGraphic(null);
 					} else {
-						if(item.intValue() == Station.TEXT_TATE_BOTTOM){
+						if(item.intValue() == Station.TEXT_BOTTOM){
 							setTextFill(Color.DARKBLUE);
 							setText("縦 - 下付き");
 						}
-						if(item.intValue() == Station.TEXT_TATE_TOP){
+						if(item.intValue() == Station.TEXT_TOP){
 							setTextFill(Color.DARKRED);
 							setText("縦 - 上付き");
 						}
-						if(item.intValue() == Station.TEXT_YOKO_LEFT){
+						if(item.intValue() == Station.TEXT_LEFT){
 							setTextFill(Color.DARKSALMON);
 							setText("横 - 左付き");
 						}
-						if(item.intValue() == Station.TEXT_YOKO_RIGHT){
+						if(item.intValue() == Station.TEXT_RIGHT){
 							setTextFill(Color.DARKGREEN);
 							setText("横 - 右付き");
 						}

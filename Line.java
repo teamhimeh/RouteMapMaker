@@ -16,10 +16,12 @@ public class Line {//路線の情報を保持するクラス。
 	public static final int BOLD = 2;
 	public static final int ITALIC_BOLD = 3;
 	
+	//この数字の値，並びは各所で利用されているので変更は要注意
 	public static final int RIGHT = 0;
 	public static final int LEFT = 1;
 	public static final int TOP = 2;
 	public static final int BOTTOM = 3;
+	public static final int CENTER = 4;
 	
 	class Connection {
 		Station station;
