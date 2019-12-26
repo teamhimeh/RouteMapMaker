@@ -353,26 +353,43 @@ public class UIController implements Initializable{
 		lineTextLocation.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
 				Toggle new_toggle) ->{
 					int RouteIndex = RouteTable.getSelectionModel().getSelectedIndex();
-					int newT = -1;
-					int oldT = -1;
-					/*
-					if(old_toggle == tateBottom) oldT = Line.BOTTOM;
-					if(old_toggle == tateTop) oldT = Line.TOP;
-					if(old_toggle == yokoLeft) oldT = Line.LEFT;
-					if(old_toggle == yokoRight) oldT = Line.RIGHT;
-					if(new_toggle == tateBottom) newT = Line.BOTTOM;
-					if(new_toggle == tateTop) newT = Line.TOP;
-					if(new_toggle == yokoLeft) newT = Line.LEFT;
-					if(new_toggle == yokoRight) newT = Line.RIGHT;
-					*/
 					if(RouteIndex == -1){
 						Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
 						alert.getDialogPane().setContentText("路線を選択してください。");
 						alert.showAndWait();
-					}else{
-						if(lineList.get(RouteIndex).getNameLocation() == oldT)
-							urManager.push(lineList.get(RouteIndex).getNameLocationProperty(), oldT, newT);
+						return;
+					}
+					Toggle[] tlToggle = {lineRight, lineLeft, lineTop, lineBottom, lineCenter};
+					int newT = Arrays.asList(tlToggle).indexOf(new_toggle);
+					int oldT = Arrays.asList(tlToggle).indexOf(old_toggle);
+					if(newT == -1 && oldT != -1) {
+						//トグルの選択が解除されたことによるlisterの呼び出し．再選択
+						lineTextLocation.selectToggle(old_toggle);
+					}else if(lineList.get(RouteIndex).getNameLocation() == oldT && oldT != newT){
+						//手動で操作されたことによるlistenerの呼び出し
+						urManager.push(lineList.get(RouteIndex).getNameLocationProperty(), oldT, newT);
 						lineList.get(RouteIndex).setNameLocation(newT);
+					}
+					lineDraw();
+				});
+		lineTextMuki.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
+				Toggle new_toggle) ->{
+					int RouteIndex = RouteTable.getSelectionModel().getSelectedIndex();
+					if(RouteIndex == -1){
+						Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
+						alert.getDialogPane().setContentText("路線を選択してください。");
+						alert.showAndWait();
+						return;
+					}
+					if(new_toggle==null && old_toggle!=null) {
+						//トグルの選択が解除されたことによるlisterの呼び出し．再選択
+						lineTextMuki.selectToggle(old_toggle);
+					} else if(old_toggle != null && old_toggle != new_toggle
+							&& lineList.get(RouteIndex).isTategaki() == (old_toggle==lineTate)) {
+						//手動で操作されたことによるlistenerの呼び出し
+						boolean nt = (new_toggle==lineTate);
+						urManager.push(lineList.get(RouteIndex).getTategakiProperty(), nt);
+						lineList.get(RouteIndex).setTategaki(nt);
 					}
 					lineDraw();
 				});
@@ -390,12 +407,9 @@ public class UIController implements Initializable{
 						StationList.getSelectionModel().selectLast();
 						StationList.setEditable(true);
 						//トグルの選択と駅名表示位置設定
-						/*
-						if(lineList.get(index).getNameLocation() == Line.BOTTOM) mukiGroup.selectToggle(tateBottom);
-						if(lineList.get(index).getNameLocation() == Line.TOP) mukiGroup.selectToggle(tateTop);
-						if(lineList.get(index).getNameLocation() == Line.RIGHT) mukiGroup.selectToggle(yokoRight);
-						if(lineList.get(index).getNameLocation() == Line.LEFT) mukiGroup.selectToggle(yokoLeft);
-						*/
+						Toggle[] tlToggle = {lineRight, lineLeft, lineTop, lineBottom, lineCenter};
+						lineTextLocation.selectToggle(tlToggle[line.getNameLocation()]);
+						lineTextMuki.selectToggle(line.isTategaki() ? lineTate : lineYoko);
 						RouteSize.getValueFactory().setValue(lineList.get(index).getNameSize());//サイズ設定
 						RouteStyle.getSelectionModel().select(lineList.get(index).getNameStyle());//style設定
 						RouteColor.setValue(lineList.get(index).getNameColor());//色設定
@@ -575,26 +589,72 @@ public class UIController implements Initializable{
 			}
 		});
 		staObeyLine.setSelected(true);
-		Toggle[] staTextLocationToggles = {staLeft, staRight, staBottom, staTop};
+		staObeyLine.setOnAction((ActionEvent)->{
+			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+			int indexS = StationList.getSelectionModel().getSelectedIndex();
+			if(indexR == -1 || indexS == -1) {
+				return;
+			}
+			Station s = lineList.get(indexR).getStations().get(indexS);
+			if((s.getTextLocation()==Station.TEXT_UNSET)==staObeyLine.isSelected()) {
+				//状態更新不要
+				return;
+			}
+			int newLocation = staObeyLine.isSelected() ? Station.TEXT_UNSET : Station.TEXT_LEFT;
+			urManager.push(s.getTextLocationProperty(), s.getTextLocation(), newLocation);
+			s.setTextLocation(newLocation);
+			//位置指定トグルの有効/無効を切り替える
+			Toggle[] stlToggles = {staLeft, staRight, staBottom, staTop, staCenter, staTate, staYoko};
+			boolean obeyLine = newLocation==Station.TEXT_UNSET;
+			Arrays.asList(stlToggles).forEach(t -> ((javafx.scene.Node)t).setDisable(obeyLine));
+			if(!obeyLine) {
+				staTextLocation.selectToggle(stlToggles[s.getTextLocation()-Station.TEXT_LEFT]);
+			}
+			lineDraw();
+		});
 		staTextLocation.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
-				Toggle new_toggle) ->{
-					int indexR = RouteTable.getSelectionModel().getSelectedIndex();
-					int indexS = StationList.getSelectionModel().getSelectedIndex();
-					int oldT = Arrays.asList(staTextLocationToggles).indexOf(old_toggle);
-					int newT = Arrays.asList(staTextLocationToggles).indexOf(new_toggle);
-					if(indexR == -1 || indexS == -1 || oldT == -1 || newT == -1) {
-						return;
-					}
+			Toggle new_toggle) ->{
+				int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+				int indexS = StationList.getSelectionModel().getSelectedIndex();
+				Toggle[] stlToggles = {staLeft, staRight, staBottom, staTop, staCenter};
+				int oldT = Arrays.asList(stlToggles).indexOf(old_toggle);
+				int newT = Arrays.asList(stlToggles).indexOf(new_toggle);
+				if(indexR == -1 || indexS == -1 || oldT == -1) {
+					return;
+				}
+				if(newT == -1) {
+					//トグルの選択が解除されたことによるlisterの呼び出し．再選択
+					staTextLocation.selectToggle(old_toggle);
+				} else {
 					oldT += Station.TEXT_LEFT;
 					newT += Station.TEXT_LEFT;
 					Station sta = lineList.get(indexR).getStations().get(indexS);
-					if(oldT == lineList.get(indexR).getStations().get(indexS).getTextLocation()) {
+					if(oldT == sta.getTextLocation()) {
 						urManager.push(sta.getTextLocationProperty(), oldT, newT);
-						//変更処理
 						sta.setTextLocation(newT);
 					}
-					lineDraw();
-				});
+				}
+				lineDraw();
+			});
+		staTextMuki.selectedToggleProperty().addListener((ObservableValue<? extends Toggle> ov, Toggle old_toggle,
+			Toggle new_toggle) ->{
+				int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+				int indexS = StationList.getSelectionModel().getSelectedIndex();
+				if(indexR == -1 || indexS == -1 || old_toggle==null) {
+					return;
+				}
+				Station s = lineList.get(indexR).getStations().get(indexS);
+				if(new_toggle==null) {
+					//トグルの選択が解除されたことによるlisterの呼び出し．再選択
+					staTextMuki.selectToggle(old_toggle);
+				} else if(old_toggle != new_toggle && s.isTategaki() == (old_toggle==staTate)) {
+					//手動で操作されたことによるlistenerの呼び出し
+					boolean nt = (new_toggle==staTate);
+					urManager.push(s.getTategakiProperty(), nt);
+					s.setTategaki(nt);
+				}
+				lineDraw();
+			});
 		staSize.setEditable(true);
 		staSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1,Integer.MAX_VALUE,0,1));
 		staSize.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -705,24 +765,29 @@ public class UIController implements Initializable{
 			}
 		});
 		StationList.getSelectionModel().selectedItemProperty().addListener( (ObservableValue<? extends String> ov, 
-				String old_val, String new_val) -> {
-					int indexR = RouteTable.getSelectionModel().getSelectedIndex();
-					int indexS = StationList.getSelectionModel().getSelectedIndex();
-					if(indexR != -1 && indexS != -1){
-						Station s = lineList.get(indexR).getStations().get(indexS);
-						/*
-						if(s.getMuki() == Station.TEXT_TATE_TOP) staMukiGroup.selectToggle(staTateTop);
-						if(s.getMuki() == Station.TEXT_TATE_BOTTOM) staMukiGroup.selectToggle(staTateBottom);
-						if(s.getMuki() == Station.TEXT_YOKO_LEFT) staMukiGroup.selectToggle(staYokoLeft);
-						if(s.getMuki() == Station.TEXT_YOKO_RIGHT) staMukiGroup.selectToggle(staYokoRight);
-						if(s.getMuki() == Station.TEXT_UNSET) staMukiGroup.selectToggle(staObeyLine);
-						*/
-						staSize.getValueFactory().setValue(s.getNameSize());
-						staStyle.getSelectionModel().select(s.getNameStyle());
-						staCurveConnection.setDisable(!lineList.get(indexR).isCurvable(indexS));
-						staCurveConnection.setSelected(lineList.get(indexR).getCurveConnection(indexS));
-					}
-				});
+			String old_val, String new_val) -> {
+				int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+				int indexS = StationList.getSelectionModel().getSelectedIndex();
+				if(indexR == -1 || indexS == -1){
+					return;
+				}
+				Station s = lineList.get(indexR).getStations().get(indexS);
+				staSize.getValueFactory().setValue(s.getNameSize());
+				staStyle.getSelectionModel().select(s.getNameStyle());
+				staCurveConnection.setDisable(!lineList.get(indexR).isCurvable(indexS));
+				staCurveConnection.setSelected(lineList.get(indexR).getCurveConnection(indexS));
+				Toggle[] stlToggles = {staLeft, staRight, staBottom, staTop, staCenter};
+				//位置指定トグルの有効/無効を切り替える
+				boolean obeyLine = s.getTextLocation()==Station.TEXT_UNSET;
+				staObeyLine.setSelected(obeyLine);
+				Arrays.asList(stlToggles).forEach(t -> ((javafx.scene.Node)t).setDisable(obeyLine));
+				((javafx.scene.Node)staTate).setDisable(obeyLine);
+				((javafx.scene.Node)staYoko).setDisable(obeyLine);
+				staTextMuki.selectToggle(s.isTategaki() ? staTate : staYoko);
+				if(!obeyLine) {
+					staTextLocation.selectToggle(stlToggles[s.getTextLocation()-Station.TEXT_LEFT]);
+				}
+			});
 		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。station座標（zoomを考慮）．
 		draggedRect.setVisible(false);
 		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>(){//canvas上でマウスが押された時
