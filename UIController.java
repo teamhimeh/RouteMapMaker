@@ -22,7 +22,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -141,7 +143,7 @@ public class UIController implements Initializable{
 	private final double pointRadius = 3;//駅の点の半径
 	final double canvasMargin = 200;
 	private final double version = 8;//セーブファイルのバージョン。セーブファイルに完全な互換性がなくなった時に変更する。
-	private final double ReleaseVersion = 11;//リリースバージョン。ユーザーへの案内用
+	private final double ReleaseVersion = 12.1;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
 	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
@@ -467,7 +469,13 @@ public class UIController implements Initializable{
 				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
 				alert.getDialogPane().setContentText("駅は2番目以降に挿入してください。");
 				alert.showAndWait();
-			}else{
+			}
+			else if(line.getCurveConnection(index) && line.isCurvable(index)) {
+				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("曲線区間に駅を挿入することはできません．");
+				alert.showAndWait();
+			}
+			else{
 				int staNum = 0;
 				while(true){
 					String d = staNum + "駅";
@@ -980,7 +988,7 @@ public class UIController implements Initializable{
 		mb_about.setOnAction((ActionEvent) ->{
 			Alert alert = new Alert(AlertType.NONE,"",ButtonType.CLOSE);
 			alert.getDialogPane().setHeaderText("バージョン情報");
-			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2019年12月9日\n"
+			alert.getDialogPane().setContentText("version "+ ReleaseVersion +"　Release：2019年12月25日\n"
 					+ "使い方の参照、不具合報告等はwikiで行うことができます。\n"
 					+ "不具合を発見された際はwikiもしくはTwitterでの報告にご協力をお願いします。\n\n"
 					+ "お問い合わせ：@himeshi_hob（Twitter）\n2017-2019 ひめし \nCreativeCommons 表示-非営利4.0国際ライセンスに従います。"
@@ -1937,7 +1945,7 @@ public class UIController implements Initializable{
 		gc.setTransform(zoom, 0, 0, zoom, 0, 0);
 		canvas.setWidth(canvasOriginal[0]*zoom);
 		canvas.setHeight(canvasOriginal[1]*zoom);
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
+		gc.clearRect(0, 0, canvasOriginal[0], canvasOriginal[1]);//はじめに全領域消去
 		//まずグリッドを描画する。
 		drawGrid();
 		//各路線ごとに描画。
@@ -1961,7 +1969,7 @@ public class UIController implements Initializable{
 					continue;
 				}
 				endP = line.getStations().get(i2).getPoint();
-				if(line.getCurveConnection(i2)) {
+				if(line.getCurveConnection(i2) && line.isCurvable(i2)) {
 					// ベジエ曲線での接続
 					int idx = pointSetStations.indexOf(line.getConnections().get(i2));
 					double[][] l1 = {pointSetStations.get(idx-2).station.getPoint(), startP};
@@ -2019,27 +2027,27 @@ public class UIController implements Initializable{
 			// 三角形グリッド
 			// 水平線
 			double y_interval = interval * Math.sqrt(3) / 2;
-			double h = canvas.getHeight();
+			double h = canvasOriginal[1];
 			for(int i = 0; i * y_interval < h; i++){//横線
-				gc.strokeLine(0, i * y_interval, canvas.getWidth(), i * y_interval);
+				gc.strokeLine(0, i * y_interval, canvasOriginal[0], i * y_interval);
 			}
 			int start_idx = (int) (Math.ceil(h/interval/Math.sqrt(3)));
 			// 斜め 傾き負線
-			for(double x = -1 * start_idx * interval; x < canvas.getWidth(); x += interval) {
+			for(double x = -1 * start_idx * interval; x < canvasOriginal[0]; x += interval) {
 				gc.strokeLine(x, 0, x + h/Math.sqrt(3), h);
 			}
 			// 斜め 傾き正線
-			for(double x = 0; x < canvas.getWidth() + h/Math.sqrt(3); x += interval) {
+			for(double x = 0; x < canvasOriginal[0] + h/Math.sqrt(3); x += interval) {
 				gc.strokeLine(x - h/Math.sqrt(3), h, x , 0);
 			}
 		} else {
 			// 四角形グリッド
-			for(int i = 0; i < canvas.getHeight();){//横線
-				gc.strokeLine(0, i, canvas.getWidth(), i);
+			for(int i = 0; i < canvasOriginal[1];){//横線
+				gc.strokeLine(0, i, canvasOriginal[0], i);
 				i = i + interval;
 			}
-			for(int i = 0; i < canvas.getWidth();){//縦線
-				gc.strokeLine(i, 0, i, canvas.getHeight());
+			for(int i = 0; i < canvasOriginal[0];){//縦線
+				gc.strokeLine(i, 0, i, canvasOriginal[1]);
 				i = i + interval;
 			}
 		}
@@ -2231,20 +2239,31 @@ public class UIController implements Initializable{
 				int stopCount = 1;//駅ごとのライン補正は情報がTrainStopにあるので何番目のTrainStopなのかカウント
 				double[] end = new double[2];
 				//まずはedgeAを考えましょう。
-				double[][] so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
-						lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
+				//最初の区間からカーブすることがある
+				final boolean next_curve = lineList.get(k).isCurvable(startPoint+1) 
+						&& lineList.get(k).getCurveConnection(startPoint+1);
+				double[][] so;
+				if(next_curve) {
+					//この場合，路線自体はstartPointより前から始まっている
+					so = shiftPoint(lineList.get(k).getStations().get(startPoint-1).getPointUS(),
+							lineList.get(k).getStations().get(startPoint).getPointUS(), zure);
+				} else {
+					so = shiftPoint(lineList.get(k).getStations().get(startPoint).getPointUS(),
+							lineList.get(k).getStations().get(startPoint + 1).getPointUS(), zure);
+				}
+				end[0] = so[next_curve ? 1 : 0][0];
+				end[1] = so[next_curve ? 1 : 0][1];
 				double edgeALength = lineList.get(k).getTrains().get(i).getEdgeA();
 				int[] staShift = lineList.get(k).getTrains().get(i).getStops().get(0).getShift();//スタートなのでindex0
-				//so[0]にstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
-				so[0][0] = so[0][0] + staShift[0];
-				so[0][1] = so[0][1] + staShift[1];
-				lineList.get(k).getStations().get(startPoint).setShiftCoor(so[0]);
+				//endにstartPointでの駅毎位置補正を加える。こうすることでShiftCoorに反映される。
+				end[0] = end[0] + staShift[0];
+				end[1] = end[1] + staShift[1];
+				lineList.get(k).getStations().get(startPoint).setShiftCoor(end.clone());
 				//edgeAを考慮する。
-				end[0] = so[0][0] - (so[1][0] - so[0][0]) * edgeALength /
+				end[0] = end[0] - (so[1][0] - so[0][0]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-				end[1] = so[0][1] - (so[1][1] - so[0][1]) * edgeALength /
+				end[1] = end[1] - (so[1][1] - so[0][1]) * edgeALength /
 						Math.sqrt(Math.pow(so[1][0] - so[0][0], 2) + Math.pow(so[1][1] - so[0][1], 2));
-				//lineList.get(k).getStations().get(startPoint).setShiftCoor(start.clone());
 				ArrayList<Pair<double[], Boolean>> staPoints = 
 						new ArrayList<Pair<double[], Boolean>>(); //<座標, curve>
 				//最初の点もstaPointsに保存する．曲線描画で必要になることがあるため．
@@ -2267,9 +2286,9 @@ public class UIController implements Initializable{
 								Math.sqrt(Math.pow(ll[1][0] - ll[0][0], 2) + Math.pow(ll[1][1] - ll[0][1], 2));
 						lineList.get(k).getStations().get(endPoint).setShiftCoor(ll[1]);
 					} else {
-						boolean next_curve = lineList.get(k).isCurvable(h+1) 
+						final boolean nc = lineList.get(k).isCurvable(h+1) 
 								&& lineList.get(k).getCurveConnection(h+1);
-						if(lineList.get(k).getStations().get(h).isSet() && !curve && !next_curve) {
+						if(lineList.get(k).getStations().get(h).isSet() && !curve && !nc) {
 							//この場合は歪みを防ぐため特殊な処理が必要。連立方程式を用意してその解を採用する。
 							double[][] zhA = shiftPoint(lineList.get(k).getStations().get(h-1).getPointUS(),
 									lineList.get(k).getStations().get(h).getPoint(), zure);
@@ -2302,8 +2321,19 @@ public class UIController implements Initializable{
 						gc.beginPath();
 						gc.moveTo(p[0], p[1]);
 					}else if(curve) {
-						// ベジエ曲線での接続
-						double[][] l1 = {staPoints.get(h-2).getKey(), staPoints.get(h-1).getKey()};
+						double[][] l1 = new double[2][];
+						//ベジエ曲線での接続
+						//運転系統が曲線区間から始まる場合，始点側の傾きを推測する必要がある．
+						if(h==1) {
+							l1[0] = shiftPoint(lineList.get(k).getStations().get(startPoint-1).getPointUS(),
+									lineList.get(k).getStations().get(startPoint).getPointUS(), zure)[0];
+							staShift = train.getStops().get(0).getShift();
+							l1[0][0] += staShift[0];
+							l1[0][1] += staShift[1];
+						} else {
+							l1[0] = staPoints.get(h-2).getKey();
+						}
+						l1[1] = staPoints.get(h-1).getKey();
 						double[][] l2 = {p, staPoints.get(h+1).getKey()};
 						double[] cp = calcIntersection(l1, l2); //control point
 						gc.quadraticCurveTo(cp[0], cp[1], p[0], p[1]);
@@ -3308,9 +3338,6 @@ public class UIController implements Initializable{
 	boolean checkUpdate(boolean onLaunch){//アップデートがあればtrue。なければfalse。このフラグは手動で確認が行われた時用。
 		boolean nv = false;
 		URL url;
-		if(onLaunch) {
-			postUsage();
-		}
 		try {
 			url = new URL("https://spreadsheets.google.com/feeds/cells/1AzBe7Jdny2YnIW9hUixfbGBLmaj1xRGjEEl042fZ7kE/od6/public/values");
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -3324,6 +3351,10 @@ public class UIController implements Initializable{
 			 * [3]4:Description in English
 			 * [4]5:URL for description in English
 			 * [5]6:Auto-Download URL
+			 * [6]7:Usage Post用URL（本番）
+			 * [7]8:Usage Post用URL（テスト）
+			 * [8]9:Error report用URL（本場）
+			 * [9]10:Error report用URL（テスト）
 			 */
 			if(conn.getResponseCode() == HttpURLConnection.HTTP_OK){
 				System.out.println("接続に問題はありません。");
@@ -3337,7 +3368,7 @@ public class UIController implements Initializable{
 				bis.close();
 				
 				//XMLの解析は別メソッドに丸投げします。
-				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ6の配列で返ってくる。
+				String[] xmlDatas = analyzeXML(document);//XMLを分析した結果はここに大きさ9の配列で返ってくる。
 				if(Double.parseDouble(xmlDatas[0]) > ReleaseVersion){
 					nv = true;
 					Platform.runLater(() ->{
@@ -3363,6 +3394,10 @@ public class UIController implements Initializable{
 				}
 				else {
 					System.out.println("この本体は最新バージョンです．");
+				}
+				if(onLaunch) {
+					postUsage(xmlDatas[ErrorReporter.isDebugBuild() ? 7 : 6]);
+					ErrorReporter.setReportURL(xmlDatas[ErrorReporter.isDebugBuild() ? 9 : 8], ReleaseVersion);
 				}
 			}else{
 				nv = true;
@@ -3399,14 +3434,24 @@ public class UIController implements Initializable{
 		return nv;
 	}
 	
-	void postUsage() {
+	void postUsage(String url_header) {
 		try {
-			URL url = new URL("https://us-central1-routemapmaker-6c324.cloudfunctions.net/registerUsage?version="
-		+ ReleaseVersion + "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
-		+ "&locale=" + Locale.getDefault().getCountry());
+			//macアドレスの取得
+			NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+			byte[]mac = network.getHardwareAddress();
+			StringBuilder mac_sb = new StringBuilder();
+			for (int i = 0; i < mac.length; i++) {
+				mac_sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+			}
+			
+			URL url = new URL(url_header + "?version=" + ReleaseVersion
+					+ "&os=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8")
+					+ "&locale=" + Locale.getDefault().getCountry()
+					+ "&mac=" + mac_sb.toString());
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.connect();
+			conn.getInputStream(); //これをもってHTTP接続が行われる．
 		} catch(IOException e) {
 			// usageの送信だけなので特にエラー処理はしない．
 			e.printStackTrace();
@@ -3414,7 +3459,7 @@ public class UIController implements Initializable{
 	}
 
 	String[] analyzeXML(Document document){
-		String[] data = new String[6];
+		String[] data = new String[10];
 		Element root = document.getDocumentElement();
 		NodeList children1 = root.getChildNodes();
 		for(int i1 = 0 ; i1 < children1.getLength(); i1++){
@@ -3440,6 +3485,10 @@ public class UIController implements Initializable{
 						if(categoryTitle.equals("A4")) data[3] = categoryContent;
 						if(categoryTitle.equals("A5")) data[4] = categoryContent;
 						if(categoryTitle.equals("A6")) data[5] = categoryContent;
+						if(categoryTitle.equals("A7")) data[6] = categoryContent;
+						if(categoryTitle.equals("A8")) data[7] = categoryContent;
+						if(categoryTitle.equals("A9")) data[8] = categoryContent;
+						if(categoryTitle.equals("A10")) data[9] = categoryContent;
 					}
 				}
 			}

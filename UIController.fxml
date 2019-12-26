@@ -177,38 +177,38 @@
       </ScrollPane>
       <MenuBar fx:id="menubar" prefHeight="29.0" prefWidth="557.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="243.0" AnchorPane.topAnchor="0.0">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu mnemonicParsing="false" text="ファイル">
             <items>
-                  <MenuItem fx:id="mb_new" mnemonicParsing="false" text="New">
+                  <MenuItem fx:id="mb_new" mnemonicParsing="false" text="新規">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="N" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator></MenuItem>
-                  <MenuItem fx:id="mb_open" mnemonicParsing="false" text="Open">
+                  <MenuItem fx:id="mb_open" mnemonicParsing="false" text="開く...">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="O" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator></MenuItem>
-              <MenuItem fx:id="mb_save" mnemonicParsing="false" text="Save">
+              <MenuItem fx:id="mb_save" mnemonicParsing="false" text="保存">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator></MenuItem>
-                  <MenuItem fx:id="mb_saveAs" mnemonicParsing="false" text="Save_As">
+                  <MenuItem fx:id="mb_saveAs" mnemonicParsing="false" text="別名保存...">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="DOWN" shortcut="DOWN" />
                      </accelerator></MenuItem>
-                  <MenuItem fx:id="mb_exportImage" mnemonicParsing="false" text="Export_Image">
+                  <MenuItem fx:id="mb_exportImage" mnemonicParsing="false" text="画像を出力...">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="P" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator></MenuItem>
             </items>
           </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
+            <Menu mnemonicParsing="false" text="編集">
               <items>
-                  <MenuItem fx:id="mb_undo" disable="true" mnemonicParsing="false" text="Undo">
+                  <MenuItem fx:id="mb_undo" disable="true" mnemonicParsing="false" text="元に戻す">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="Z" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator>
                   </MenuItem>
-                  <MenuItem fx:id="mb_redo" disable="true" mnemonicParsing="false" text="Redo">
+                  <MenuItem fx:id="mb_redo" disable="true" mnemonicParsing="false" text="やり直し">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="Z" control="UP" meta="UP" shift="DOWN" shortcut="DOWN" />
                      </accelerator>
@@ -255,7 +255,7 @@
                   </MenuItem>
               </items>
             </Menu>
-          <Menu mnemonicParsing="false" text="Help">
+          <Menu mnemonicParsing="false" text="ヘルプ">
             <items>
               <MenuItem fx:id="mb_about" mnemonicParsing="false" text="About" />
                   <MenuItem fx:id="mb_goWiki" mnemonicParsing="false" text="Wikiにアクセスする" />
