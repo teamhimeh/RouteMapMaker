@@ -39,7 +39,7 @@ public class Line {//路線の情報を保持するクラス。
 	private ObservableList<Connection> connections; //<駅，曲線接続> で駅同士の接続を保持．
 	private ObservableList<Train> trains;//運転系統を保持する。
 	private StringProperty lineName = new SimpleStringProperty();//路線名
-	private BooleanProperty tategaki = new SimpleBooleanProperty(false);//縦書きか横書きか。trueなら縦書き
+	private BooleanProperty tategaki = new SimpleBooleanProperty(true);//縦書きか横書きか。trueなら縦書き
 	private IntegerProperty nameStyle = new SimpleIntegerProperty(REGULAR);
 	private IntegerProperty nameSize = new SimpleIntegerProperty(15);
 	private IntegerProperty nameLocation = new SimpleIntegerProperty(BOTTOM);
