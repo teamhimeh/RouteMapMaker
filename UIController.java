@@ -2162,24 +2162,28 @@ public class UIController implements Initializable{
 	}
 	
 	void drawYoko(Station station, int size, int style, int location, int[] shift, Color color){
-		double sideIntv = 5;
+		double sideIntv;
 		double[] p = station.getPointUS();
 		//文字スタイルの設定
-		if(style == Line.REGULAR) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.REGULAR, size));
-		if(style == Line.ITALIC) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.ITALIC, size));
-		if(style == Line.BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.REGULAR, size));
-		if(style == Line.ITALIC_BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.ITALIC, size));
+		FontWeight fw = (style == Line.BOLD || style == Line.ITALIC_BOLD) ? FontWeight.BOLD : FontWeight.NORMAL;
+		FontPosture fp = (style == Line.ITALIC || style == Line.ITALIC_BOLD) ? FontPosture.ITALIC : FontPosture.REGULAR;
+		gc.setFont(Font.font(stationFontFamily.get(), fw, fp, size));
 		gc.setFill(color);//色の設定
 		gc.setTextBaseline(VPos.BASELINE);
 		if(location == Line.LEFT){//右付き、左付きの設定
 			gc.setTextAlign(TextAlignment.RIGHT);
 			sideIntv = -5;
-		}else{
+		} else if (location == Line.RIGHT){
 			gc.setTextAlign(TextAlignment.LEFT);
 			sideIntv = 5;
+		} else {
+			gc.setTextAlign(TextAlignment.CENTER);
+			sideIntv = 0;
 		}
+		gc.setTextBaseline(
+				location==Line.TOP ? VPos.BOTTOM : location==Line.BOTTOM ? VPos.TOP : VPos.CENTER);
 		gc.fillText(station.getName(), 
-				p[0] + sideIntv + shift[0], p[1] + size / 2 + shift[1]);//X座標は要検証
+				p[0] + sideIntv + shift[0], p[1] + shift[1]);//X座標は要検証
 	}
 	void drawTate(Station station, int size, int style, int location, int[] shift, Color color){
 		double[] p = station.getPointUS();
@@ -2191,18 +2195,15 @@ public class UIController implements Initializable{
 			}
 		}
 		//文字スタイルの設定
-		if(style == Line.REGULAR) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.REGULAR, size));
-		if(style == Line.ITALIC) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.NORMAL, FontPosture.ITALIC, size));
-		if(style == Line.BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.REGULAR, size));
-		if(style == Line.ITALIC_BOLD) gc.setFont(Font.font(stationFontFamily.get(), FontWeight.BOLD, FontPosture.ITALIC, size));
+		FontWeight fw = (style == Line.BOLD || style == Line.ITALIC_BOLD) ? FontWeight.BOLD : FontWeight.NORMAL;
+		FontPosture fp = (style == Line.ITALIC || style == Line.ITALIC_BOLD) ? FontPosture.ITALIC : FontPosture.REGULAR;
+		gc.setFont(Font.font(stationFontFamily.get(), fw, fp, size));
 		gc.setFill(color);//色の設定
-		gc.setTextAlign(TextAlignment.LEFT);
-		if(location == Line.TOP){//右付き、左付きの設定
-			gc.setTextBaseline(VPos.BOTTOM);
-		}else{
-			gc.setTextBaseline(VPos.TOP);
-		}
-		gc.fillText(tate.toString(), p[0] - size / 2 + shift[0], p[1] + shift[1]);//Y座標の設定は要検証
+		gc.setTextAlign(TextAlignment.CENTER);
+		gc.setTextBaseline(
+			location==Line.TOP ? VPos.BOTTOM : location==Line.BOTTOM ? VPos.TOP : VPos.CENTER);
+		int posOffset = location==Line.LEFT ? -1*size/2 : location==Line.RIGHT ? size/2 : 0;
+		gc.fillText(tate.toString(), p[0] + posOffset + shift[0], p[1] + shift[1]);//Y座標の設定は要検証
 	}
 	
 	// 線分aと線分bの（延長）交点を求める．aとbが平行で交点がない場合はa[1]を用いる．
