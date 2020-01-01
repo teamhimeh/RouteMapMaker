@@ -2016,10 +2016,10 @@ public class UIController implements Initializable{
 		double[] startP = new double[2];//スタート座標
 		double[] endP = new double[2];//エンド座標
 		double radius = pointRadius;//点の半径
-		gc.setFill(Color.BLACK);
-		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(2);
 		for(Line line: lineList){
+			//選択中の路線だけ色を変える
+			gc.setStroke(line == this.line ? Color.PERU : Color.BLACK);
 			//まずは始点での処理。
 			List<Line.Connection> pointSetStations = line.getConnections().stream().
 					filter(c -> c.station.isSet()).collect(Collectors.toList());
