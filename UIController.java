@@ -132,7 +132,7 @@ public class UIController implements Initializable{
 	private ObservableList<StopMark> markList = FXCollections.observableArrayList();//駅ごと
 	private ObservableList<StopMark> trainMarkList = FXCollections.observableArrayList();//経路ごと
 	private ObservableList<Line> lineList;
-	private Line line;
+	private Line line; //現在選択中の路線？（RouteTableのlistenerでセットされている）
 	private Station movingSt;
 	private ObservableList<MvSta> movingStList = FXCollections.observableArrayList();
 	private FreeItem movingItem = null;
@@ -396,24 +396,24 @@ public class UIController implements Initializable{
 		RouteTable.getSelectionModel().selectedItemProperty().addListener( (ObservableValue<? extends String> ov, 
 				String old_val, String new_val) -> {
 					//路線が選択された時の処理
-					if(RouteTable.getSelectionModel().getSelectedIndex() != -1){//index-1は何も選択されてないことを示すので処理しない。
-						int index = RouteTable.getSelectionModel().getSelectedIndex();
-						line = lineList.get(index);
-						StationList.setItems(snList);
-						snList.clear();
-						for(int i=0; i < line.getStations().size(); i++){
-							snList.add(line.getStations().get(i).getName());
-						}
-						StationList.getSelectionModel().selectLast();
-						StationList.setEditable(true);
-						//トグルの選択と駅名表示位置設定
-						Toggle[] tlToggle = {lineRight, lineLeft, lineTop, lineBottom, lineCenter};
-						lineTextLocation.selectToggle(tlToggle[line.getNameLocation()]);
-						lineTextMuki.selectToggle(line.isTategaki() ? lineTate : lineYoko);
-						RouteSize.getValueFactory().setValue(lineList.get(index).getNameSize());//サイズ設定
-						RouteStyle.getSelectionModel().select(lineList.get(index).getNameStyle());//style設定
-						RouteColor.setValue(lineList.get(index).getNameColor());//色設定
+					int index = RouteTable.getSelectionModel().getSelectedIndex();
+					if(index == -1) {
+						//index-1は何も選択されてないことを示すので処理しない。
+						return;
 					}
+					line = lineList.get(index);
+					StationList.setItems(snList);
+					snList.clear();
+					line.getStations().stream().forEach(s -> snList.add(s.getName())); //駅名リストの更新
+					StationList.getSelectionModel().selectLast();
+					StationList.setEditable(true);
+					//トグルの選択と駅名表示位置設定
+					Toggle[] tlToggle = {lineRight, lineLeft, lineTop, lineBottom, lineCenter};
+					lineTextLocation.selectToggle(tlToggle[line.getNameLocation()]);
+					lineTextMuki.selectToggle(line.isTategaki() ? lineTate : lineYoko);
+					RouteSize.getValueFactory().setValue(lineList.get(index).getNameSize());//サイズ設定
+					RouteStyle.getSelectionModel().select(lineList.get(index).getNameStyle());//style設定
+					RouteColor.setValue(lineList.get(index).getNameColor());//色設定
 				});
 		RouteTable.setOnEditCommit(new EventHandler<ListView.EditEvent<String>>(){
 			@Override
