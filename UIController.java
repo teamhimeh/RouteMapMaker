@@ -788,9 +788,11 @@ public class UIController implements Initializable{
 					staTextLocation.selectToggle(stlToggles[s.getTextLocation()-Station.TEXT_LEFT]);
 				}
 				//選択中の駅を赤点で表示する
-				movingStList.clear();
-				movingStList.add(new MvSta(s));
-				lineDraw();
+				if(movingStList.size() < 2) {
+					movingStList.clear();
+					movingStList.add(new MvSta(s));
+					lineDraw();
+				}
 			});
 		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。station座標（zoomを考慮）．
 		draggedRect.setVisible(false);
