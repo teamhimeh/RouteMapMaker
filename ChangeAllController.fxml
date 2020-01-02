@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.ChangeAllController">
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.ChangeAllController">
    <children>
       <TabPane prefHeight="416.0" prefWidth="640.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -41,11 +41,6 @@
                         <Label layoutX="333.0" layoutY="221.0" text="Y:" />
                         <Spinner fx:id="A_Y" layoutX="350.0" layoutY="216.0" prefHeight="27.0" prefWidth="71.0" />
                         <Button fx:id="A_Zure_AP" layoutX="443.0" layoutY="216.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <Label layoutX="206.0" layoutY="258.0" text="（色凡例）" />
-                        <Label layoutX="204.0" layoutY="275.0" text="縦書き・下付き" textFill="DARKBLUE" />
-                        <Label layoutX="204.0" layoutY="291.0" text="縦書き・上付き" textFill="DARKRED" />
-                        <Label layoutX="204.0" layoutY="308.0" text="横書き・右付き" textFill="DARKGREEN" />
-                        <Label layoutX="204.0" layoutY="325.0" text="横書き・左付き" textFill="DARKSALMON" />
                      </children></AnchorPane>
             </content>
           </Tab>
@@ -123,29 +118,22 @@
                         <Label layoutX="172.0" layoutY="13.0" text="駅名" />
                         <ToggleButton fx:id="D_TBstaOn" layoutX="300.0" layoutY="31.0" mnemonicParsing="false" text="駅名位置個別補正ON" />
                         <Label layoutX="300.0" layoutY="62.0" text="駅名位置補正（駅別）" />
-                        <Label layoutX="300.0" layoutY="82.0" text="X:" />
-                        <Spinner fx:id="D_staX" layoutX="313.0" layoutY="77.0" prefHeight="27.0" prefWidth="80.0" />
-                        <Label layoutX="416.0" layoutY="82.0" text="Y:" />
-                        <Spinner fx:id="D_staY" layoutX="429.0" layoutY="77.0" prefHeight="27.0" prefWidth="80.0" />
-                        <Label layoutX="300.0" layoutY="113.0" text="駅名表示" />
-                        <Label layoutX="300.0" layoutY="144.0" text="駅名大きさ" />
-                        <Spinner fx:id="D_staSize" layoutX="365.0" layoutY="139.0" prefHeight="27.0" prefWidth="86.0" />
-                        <Label layoutX="300.0" layoutY="166.0" text="0:路線準拠 -1:非表示" textFill="#00a6ff" />
-                        <Label layoutX="300.0" layoutY="189.0" text="駅名スタイル" />
+                        <Label layoutX="300.0" layoutY="85.0" text="X:" />
+                        <Spinner fx:id="D_staX" layoutX="313.0" layoutY="80.0" prefHeight="27.0" prefWidth="80.0" />
+                        <Label layoutX="416.0" layoutY="85.0" text="Y:" />
+                        <Spinner fx:id="D_staY" layoutX="429.0" layoutY="80.0" prefHeight="27.0" prefWidth="80.0" />
+                        <Label layoutX="300.0" layoutY="120.0" text="駅名表示" />
+                        <Label layoutX="300.0" layoutY="155.0" text="駅名大きさ" />
+                        <Spinner fx:id="D_staSize" layoutX="365.0" layoutY="150.0" prefHeight="27.0" prefWidth="86.0" />
+                        <Label layoutX="300.0" layoutY="180.0" text="0:路線準拠 -1:非表示" textFill="#00a6ff" />
+                        <Label layoutX="300.0" layoutY="200.0" text="駅名スタイル" />
                         <Button fx:id="D_TBstaOn_AP" layoutX="451.0" layoutY="31.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <Button fx:id="D_sta_AP" layoutX="523.0" layoutY="77.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <Button fx:id="D_staMuki_AP" layoutX="523.0" layoutY="108.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <Button fx:id="D_staSize_AP" layoutX="461.0" layoutY="139.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <Button fx:id="D_staStyle_AP" layoutX="545.0" layoutY="184.0" mnemonicParsing="false" text="適用" textFill="RED" />
-                        <ComboBox fx:id="D_staMuki" layoutX="355.0" layoutY="108.0" prefWidth="150.0" />
-                        <ComboBox fx:id="D_staStyle" layoutX="386.0" layoutY="184.0" prefWidth="150.0" />
-                        <Label layoutX="300.0" layoutY="237.0" text="（色凡例）" />
-                        <Label layoutX="296.0" layoutY="255.0" text="縦書き・下付き" textFill="DARKBLUE" />
-                        <Label layoutX="296.0" layoutY="272.0" text="縦書き・上付き" textFill="DARKRED" />
-                        <Label layoutX="296.0" layoutY="289.0" text="横書き・右付き" textFill="DARKGREEN" />
-                        <Label layoutX="296.0" layoutY="306.0" text="横書き・左付き" textFill="DARKSALMON" />
-                        <Label layoutX="296.0" layoutY="323.0" text="路線準拠" />
-                        <Label layoutX="296.0" layoutY="340.0" text="非表示" textFill="GREY" />
+                        <Button fx:id="D_sta_AP" layoutX="523.0" layoutY="80.0" mnemonicParsing="false" text="適用" textFill="RED" />
+                        <Button fx:id="D_staMuki_AP" layoutX="523.0" layoutY="115.0" mnemonicParsing="false" text="適用" textFill="RED" />
+                        <Button fx:id="D_staSize_AP" layoutX="461.0" layoutY="150.0" mnemonicParsing="false" text="適用" textFill="RED" />
+                        <Button fx:id="D_staStyle_AP" layoutX="545.0" layoutY="200.0" mnemonicParsing="false" text="適用" textFill="RED" />
+                        <ComboBox fx:id="D_staMuki" layoutX="355.0" layoutY="115.0" prefWidth="150.0" />
+                        <ComboBox fx:id="D_staStyle" layoutX="386.0" layoutY="200.0" prefWidth="150.0" />
                      </children></AnchorPane>
               </content>
             </Tab>

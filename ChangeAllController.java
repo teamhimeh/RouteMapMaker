@@ -94,22 +94,33 @@ public class ChangeAllController implements Initializable{
 		//タブA（路線プロパティ）
 		A_list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		A_list.setCellFactory(new LineCell());
-		ObservableList<Integer> locationList = FXCollections.observableArrayList(Line.BOTTOM,Line.TOP,Line.RIGHT,Line.LEFT);
+		//LineのlocationListを組み立てる
+		ObservableList<Integer> locationList = FXCollections.observableArrayList();
+		for(int i=0; i<5; i++) {
+			locationList.add(i); //横書き
+			locationList.add(i + (1<<4)); //縦書き
+		}
 		A_Location.setItems(locationList);
 		A_Location.setCellFactory(new locationCell());
 		A_Location.setButtonCell(new locationCell().call(null));
 		A_Location.getSelectionModel().select(0);
 		A_Location_AP.setOnAction((ActionEvent) ->{
-			if(confirm("路線駅名表示位置")){
-				if(A_list.getSelectionModel().getSelectedItems().size() > 0){
-					for(Line l: A_list.getSelectionModel().getSelectedItems()){
-						l.setNameLocation(A_Location.getSelectionModel().getSelectedItem().intValue());
-					}
-				}else{
-					Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
-					alert.getDialogPane().setContentText("変更する路線を選択してください。");
-					alert.showAndWait();
+			if(!confirm("路線駅名表示位置") || A_Location.getSelectionModel().getSelectedItem()==null) {
+				return;
+			}
+			if(A_list.getSelectionModel().getSelectedItems().size() > 0){
+				int v = A_Location.getSelectionModel().getSelectedItem().intValue();
+				boolean tate = (v >> 4) > 0;
+				v = v - (tate ? (1<<4) : 0); //縦書きbitを消去
+				for(Line l: A_list.getSelectionModel().getSelectedItems()){
+					l.setNameLocation(v);
+					l.setTategaki(tate);
 				}
+				uic.ReDraw();
+			}else{
+				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("変更する路線を選択してください。");
+				alert.showAndWait();
 			}
 		});
 		A_Color_AP.setOnAction((ActionEvent) ->{
@@ -147,7 +158,7 @@ public class ChangeAllController implements Initializable{
 		A_Style.setButtonCell(new A_styleCell().call(null));
 		A_Style.getSelectionModel().select(0);
 		A_Style_AP.setOnAction((ActionEvent) ->{
-			if(confirm("路線駅名表示位置")){
+			if(confirm("路線駅名スタイル")){
 				if(A_list.getSelectionModel().getSelectedItems().size() > 0){
 					for(Line l: A_list.getSelectionModel().getSelectedItems()){
 						l.setNameStyle(A_Style.getSelectionModel().getSelectedItem().intValue());
@@ -431,32 +442,38 @@ public class ChangeAllController implements Initializable{
 			}
 			uic.ReDraw();
 		});
-		ObservableList<Integer> staMukiList = FXCollections.observableArrayList(Station.TEXT_BOTTOM,Station.TEXT_TOP,
-				Station.TEXT_RIGHT,Station.TEXT_LEFT,Station.TEXT_UNSET);
+		//staMukiListを組み立てる
+		ObservableList<Integer> staMukiList = FXCollections.observableArrayList(Station.TEXT_UNSET);
+		for(int i=0; i<5; i++) {
+			staMukiList.add(Station.TEXT_LEFT + i); //横書き
+			staMukiList.add(Station.TEXT_LEFT + i + (1<<4)); //縦書き
+		}
 		D_staMuki.setItems(staMukiList);
-		D_staMuki.setCellFactory(new staMukiCell());
-		D_staMuki.setButtonCell(new staMukiCell().call(null));
+		D_staMuki.setCellFactory(new locationCell());
+		D_staMuki.setButtonCell(new locationCell().call(null));
 		D_staMuki.getSelectionModel().select(0);
 		D_staMuki_AP.setOnAction((ActionEvent) ->{
-			if(confirm("駅名表示位置")){
-				if(D_LineList.getSelectionModel().getSelectedItems().size() > 1){//複数の路線が選択されている。
-					for(Line line: D_LineList.getSelectionModel().getSelectedItems()){
-						for(Station sta: line.getStations()){
-							if(D_staMuki.getSelectionModel().getSelectedItem() != null)
-								sta.setTextLocation(D_staMuki.getSelectionModel().getSelectedItem().intValue());
-						}
+			if(!confirm("駅名表示位置") || D_staMuki.getSelectionModel().getSelectedItem() == null) {
+				return;
+			}
+			int v = D_staMuki.getSelectionModel().getSelectedItem().intValue();
+			boolean tate = (v >> 4) > 0;
+			v = v - (tate ? (1<<4) : 0); //縦書きbitを消去
+			if(D_LineList.getSelectionModel().getSelectedItems().size() > 1){//複数の路線が選択されている。
+				for(Line line: D_LineList.getSelectionModel().getSelectedItems()){
+					for(Station sta: line.getStations()){
+						sta.setTextLocation(v);
+						sta.setTategaki(tate);
 					}
-				}else{
-					if(D_StaList.getSelectionModel().getSelectedItems().size() == 0){
-						Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
-						alert.getDialogPane().setContentText("変更する駅を選択してください。");
-						alert.showAndWait();
-					}else{
-						for(Station sta: D_StaList.getSelectionModel().getSelectedItems()){
-							if(D_staMuki.getSelectionModel().getSelectedItem() != null)
-								sta.setTextLocation(D_staMuki.getSelectionModel().getSelectedItem().intValue());
-						}
-					}
+				}
+			}else if(D_StaList.getSelectionModel().getSelectedItems().size() == 0){
+				Alert alert = new Alert(AlertType.WARNING,"",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("変更する駅を選択してください。");
+				alert.showAndWait();
+			}else{
+				for(Station sta: D_StaList.getSelectionModel().getSelectedItems()){
+					sta.setTextLocation(v);
+					sta.setTategaki(tate);
 				}
 			}
 			uic.ReDraw();
@@ -582,12 +599,6 @@ public class ChangeAllController implements Initializable{
 						setText(null);
 						setGraphic(null);
 					} else {
-						Color textColor = Color.BLACK;//色は共通規格
-						if(item.getNameLocation() == Line.BOTTOM) textColor = Color.DARKBLUE;
-						if(item.getNameLocation() == Line.TOP) textColor = Color.DARKRED;
-						if(item.getNameLocation() == Line.RIGHT) textColor = Color.DARKGREEN;
-						if(item.getNameLocation() == Line.LEFT) textColor = Color.DARKSALMON;
-						setTextFill(textColor);
 						setText(item.getName());
 					}
 				}
@@ -642,51 +653,8 @@ public class ChangeAllController implements Initializable{
 						setText(null);
 						setGraphic(null);
 					} else {
-						Color textColor = Color.BLACK;//色は共通規格
-						if(item.getTextLocation() == Station.TEXT_BOTTOM) textColor = Color.DARKBLUE;
-						if(item.getTextLocation() == Station.TEXT_TOP) textColor = Color.DARKRED;
-						if(item.getTextLocation() == Station.TEXT_RIGHT) textColor = Color.DARKGREEN;
-						if(item.getTextLocation() == Station.TEXT_LEFT) textColor = Color.DARKSALMON;
-						setTextFill(textColor);
-						if(item.getNameSize() == -1) setTextFill(Color.GRAY);//非表示設定ならグレー
+						setTextFill(item.getNameSize() == -1 ? Color.GRAY : Color.BLACK); //非表示設定ならグレー
 						setText(item.getName());
-					}
-				}
-			};
-		}
-	}
-	class staMukiCell extends ListCell<Integer> implements Callback<ListView<Integer>, ListCell<Integer>>{
-		@Override
-		public ListCell<Integer> call(ListView<Integer> param) {
-			// TODO Auto-generated method stub
-			return new staMukiCell(){
-				@Override
-				protected void updateItem(Integer item, boolean empty){
-					super.updateItem(item, empty);
-					if (empty || item == null) {
-						setText(null);
-						setGraphic(null);
-					} else {
-						if(item.intValue() == Station.TEXT_BOTTOM){
-							setTextFill(Color.DARKBLUE);
-							setText("縦 - 下付き");
-						}
-						if(item.intValue() == Station.TEXT_TOP){
-							setTextFill(Color.DARKRED);
-							setText("縦 - 上付き");
-						}
-						if(item.intValue() == Station.TEXT_LEFT){
-							setTextFill(Color.DARKSALMON);
-							setText("横 - 左付き");
-						}
-						if(item.intValue() == Station.TEXT_RIGHT){
-							setTextFill(Color.DARKGREEN);
-							setText("横 - 右付き");
-						}
-						if(item.intValue() == Station.TEXT_UNSET){
-							setTextFill(Color.BLACK);
-							setText("路線準拠");
-						}
 					}
 				}
 			};
@@ -700,25 +668,21 @@ public class ChangeAllController implements Initializable{
 				@Override
 				protected void updateItem(Integer item, boolean empty){
 					super.updateItem(item, empty);
+					String[] lineLocStrings = {"右付き", "左付き", "上付き", "下付き", "中央"};
+					String[] staLocStrings = {"左付き", "右付き", "下付き", "上付き", "中央"};
 					if (empty || item == null) {
 						setText(null);
 						setGraphic(null);
 					} else {
-						if(item.intValue() == Line.BOTTOM){
-							setTextFill(Color.DARKBLUE);
-							setText("縦 - 下付き");
+						boolean tate = (item.intValue() >> 4) > 0;
+						int v = item.intValue() - (tate ? (1<<4) : 0); //TEXT_UNSETが-11なのでbit演算はめんどい
+						if(v == Station.TEXT_UNSET) {
+							setText("路線準拠");
 						}
-						if(item.intValue() == Line.TOP){
-							setTextFill(Color.DARKRED);
-							setText("縦 - 上付き");
-						}
-						if(item.intValue() == Line.LEFT){
-							setTextFill(Color.DARKSALMON);
-							setText("横 - 左付き");
-						}
-						if(item.intValue() == Line.RIGHT){
-							setTextFill(Color.DARKGREEN);
-							setText("横 - 右付き");
+						else if(v >= Station.TEXT_LEFT) {
+							setText((tate ? "縦" : "横") + " - " + staLocStrings[v-Station.TEXT_LEFT]);
+						} else {
+							setText((tate ? "縦" : "横") + " - " + lineLocStrings[v]);
 						}
 					}
 				}
