@@ -3,7 +3,11 @@ package RouteMapMaker;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class ErrorReporter {
@@ -34,6 +38,7 @@ public class ErrorReporter {
 			conn.setDoOutput(true);
 			conn.setRequestProperty("Content-Type", "text/plain");
 			StringBuilder sb = new StringBuilder("version: " + String.valueOf(er.version) + "\n"); //バージョン
+			sb.append(ErrorReporter.getMacAddr() + "\n");
 			sb.append(e.toString() + "\n"); //エラーメッセージ
 			Arrays.asList(e.getStackTrace()).forEach(st -> sb.append(st.toString() + "\n"));
 			OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
@@ -45,5 +50,15 @@ public class ErrorReporter {
 			// stacktraceの送信だけなので特にエラー処理はしない．
 			ioe.printStackTrace();
 		}
+	}
+	
+	public static String getMacAddr() throws SocketException, UnknownHostException {
+		NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+		byte[]mac = network.getHardwareAddress();
+		StringBuilder mac_sb = new StringBuilder();
+		for (int i = 0; i < mac.length; i++) {
+			mac_sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+		}
+		return mac_sb.toString();
 	}
 }
