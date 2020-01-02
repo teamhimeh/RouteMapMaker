@@ -2007,6 +2007,10 @@ public class UIController implements Initializable{
 		}
 	}
 	void lineDraw(){
+		if(isLoading) {
+			//データ読み込み中はリスナが反応してdrawを呼ぶので，応答しない．
+			return;
+		}
 		gc.restore();
 		gc.setTransform(zoom, 0, 0, zoom, 0, 0);
 		canvas.setWidth(canvasOriginal[0]*zoom);
@@ -2246,6 +2250,10 @@ public class UIController implements Initializable{
 	}
 	
 	void mapDraw(){//leftEdit状態の時はこちらが描画される。
+		if(isLoading) {
+			//データ読み込み中はリスナが反応してdrawを呼ぶので，応答しない．
+			return;
+		}
 		gc.restore();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());//はじめに全領域消去
 		gc.setLineCap(StrokeLineCap.ROUND);//先っちょは丸くする。
