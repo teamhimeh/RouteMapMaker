@@ -107,6 +107,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Pair;
 
 import javax.imageio.*;
@@ -145,6 +146,7 @@ public class UIController implements Initializable{
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
 	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
+	private BackGround backGround = new BackGround();
 	private double zoom = 1.0;//canvas上での表示倍率。mapDrawのみに適用する。
 	protected double[] canvasOriginal = new double[2];//mapDrawで1倍の時のcanvasのサイズを記録しておく。
 	private StringProperty stationFontFamily = new SimpleStringProperty("system");//駅名に使用するフォントファミリ名
@@ -168,6 +170,7 @@ public class UIController implements Initializable{
 	@FXML Button RouteDelete;
 	@FXML Button RouteAdd;
 	@FXML Button RouteLoad;
+	@FXML Button setBgImage;
 	@FXML Button staRemoveRestr;
 	@FXML Button staDeConnect;
 	@FXML Button StationDelete;
@@ -182,8 +185,9 @@ public class UIController implements Initializable{
 	@FXML Button RRT_UP;
 	@FXML Button RRT_DOWN;
 	@FXML Canvas canvas;
+	@FXML CheckBox showBackInLE;
 	@FXML CheckBox staCurveConnection;
-	@FXML ColorPicker re_bg_CP;
+	@FXML ColorPicker bgColor_CP;
 	@FXML ColorPicker re_line_CP;
 	@FXML ColorPicker re_mark_CP;
 	@FXML ColorPicker RouteColor;
@@ -193,6 +197,7 @@ public class UIController implements Initializable{
 	@FXML ComboBox<String> re_staPStyle_CB;
 	@FXML ComboBox<String> RouteStyle;
 	@FXML ComboBox<String> staStyle;
+	@FXML Label bgImageLabel;
 	@FXML Label currentFont;
 	@FXML Label mouseLocation;
 	@FXML ListView<String> RouteTable;
@@ -245,6 +250,10 @@ public class UIController implements Initializable{
 	@FXML Rectangle draggedRect;
 	@FXML ScrollPane canvasPane;
 	@FXML Slider ZoomSlider;
+	@FXML Spinner<Integer> bgImageOpacity;
+	@FXML Spinner<Integer> bgImageSize;
+	@FXML Spinner<Integer> bgImageX;
+	@FXML Spinner<Integer> bgImageY;
 	@FXML Spinner<Integer> re_line_SP;
 	@FXML Spinner<Integer> re_lineC_SP;
 	@FXML Spinner<Integer> re_mark_SP;
@@ -792,6 +801,87 @@ public class UIController implements Initializable{
 					lineDraw();
 				}
 			});
+		
+		showBackInLE.setOnAction((ActionEvent) -> {
+			lineDraw();
+		});
+		
+		bgColor_CP.setValue(backGround.color);
+		bgColor_CP.setOnAction((ActionEvent) ->{
+			// undo stackにpushする必要があるか？
+			if(!bgColor_CP.getValue().equals(backGround.color) || backGround.image!=null) {
+				BackGround prev_bg = backGround.clone();
+				backGround.color = bgColor_CP.getValue();
+				backGround.image = null;
+				bgImageX.setDisable(true);
+				bgImageY.setDisable(true);
+				bgImageSize.setDisable(true);
+				bgImageOpacity.setDisable(true);
+				urManager.push(prev_bg, backGround.clone(), backGround);
+			}
+			lineDraw();
+		});
+		
+		setBgImage.setOnAction((ActionEvent) -> {
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("画像ファイルを選択してください。");
+			fileChooser.getExtensionFilters().add(new ExtensionFilter("Image Files(jpg,png,gif,bmp)", 
+					"*.png", "*.jpg", "*.jpeg", "*.gif","*.bmp", "*.PNG", "*.JPG", "*.JPEG", "*.GIF","*.BMP"));
+			File imageFile = fileChooser.showOpenDialog(null);
+			if(imageFile == null) { return; } //画像が選択されなかった
+			try {
+				Image im = new Image(new BufferedInputStream(new FileInputStream(imageFile)));
+				if(im.isError()) { //イメージのロード中にエラーが検出されたことを示す。
+					Alert alert = new Alert(AlertType.ERROR,"画像の読み込みエラー",ButtonType.CLOSE);
+					alert.getDialogPane().setContentText("画像の読み込みでエラーが発生しました。画像ファイルでない可能性があります。");
+					alert.showAndWait();
+					return;
+				}
+				BackGround prev_bg = backGround.clone();
+				backGround.image = im;
+				urManager.push(prev_bg, backGround.clone(), backGround);
+				bgImageX.setDisable(false);
+				bgImageY.setDisable(false);
+				bgImageSize.setDisable(false);
+				bgImageOpacity.setDisable(false);
+				lineDraw();
+			} catch (Exception e) {
+				e.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR,"ファイルのエラー",ButtonType.CLOSE);
+				alert.getDialogPane().setContentText("選択されたファイルを開くことができませんでした。");
+				alert.showAndWait();
+			}
+		});
+		
+		bgImageX.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE,Integer.MAX_VALUE,0));
+		bgImageY.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE,Integer.MAX_VALUE,0));
+		bgImageSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,1000,100));
+		bgImageOpacity.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,100,0));
+		bgImageX.valueProperty().addListener((obs, oldVal, newVal) -> {
+			BackGround prev_bg = backGround.clone();
+			backGround.x = newVal;
+			urManager.push(prev_bg, backGround.clone(), backGround);
+			lineDraw();
+		});
+		bgImageY.valueProperty().addListener((obs, oldVal, newVal) -> {
+			BackGround prev_bg = backGround.clone();
+			backGround.y = newVal;
+			urManager.push(prev_bg, backGround.clone(), backGround);
+			lineDraw();
+		});
+		bgImageSize.valueProperty().addListener((obs, oldVal, newVal) -> {
+			BackGround prev_bg = backGround.clone();
+			backGround.zoomRatio = newVal;
+			urManager.push(prev_bg, backGround.clone(), backGround);
+			lineDraw();
+		});
+		bgImageOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
+			BackGround prev_bg = backGround.clone();
+			backGround.opacity = newVal;
+			urManager.push(prev_bg, backGround.clone(), backGround);
+			lineDraw();
+		});
+		
 		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。station座標（zoomを考慮）．
 		draggedRect.setVisible(false);
 		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>(){//canvas上でマウスが押された時
@@ -1435,11 +1525,6 @@ public class UIController implements Initializable{
 			}
 		});
 		//色パレットの初期設定
-		re_bg_CP.setOnAction((ActionEvent) ->{
-			if(! bgColor.get().equals(re_bg_CP.getValue())) urManager.push(bgColor, bgColor.get(), re_bg_CP.getValue());
-			bgColor.set(re_bg_CP.getValue());
-			mapDraw();
-		});
 		re_line_CP.setOnAction((ActionEvent) ->{
 			int indexR = R_RouteTable.getSelectionModel().getSelectedIndex();
 			int indexT = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1969,8 +2054,16 @@ public class UIController implements Initializable{
 		int sizeRT = trList.size();
 		int indexRS = tStaList.getSelectionModel().getSelectedIndex();
 		int sizeRS = tStaListOb.size();
-		//駅名フォント設定とbgColorは駅を選択し直しても更新されないので個別に更新
-		re_bg_CP.setValue(bgColor.get());
+		//駅名フォント設定と背景設定は駅を選択し直しても更新されないので個別に更新
+		bgColor_CP.setValue(backGround.color);
+		bgImageX.getValueFactory().setValue(backGround.x);
+		bgImageY.getValueFactory().setValue(backGround.y);
+		bgImageSize.getValueFactory().setValue(backGround.zoomRatio);
+		bgImageOpacity.getValueFactory().setValue(backGround.opacity);
+		bgImageX.setDisable(backGround.image==null);
+		bgImageY.setDisable(backGround.image==null);
+		bgImageSize.setDisable(backGround.image==null);
+		bgImageOpacity.setDisable(backGround.image==null);
 		currentFont.setText(stationFontFamily.get());
 		//まずは左の枠
 		rnList.clear();
@@ -2014,8 +2107,10 @@ public class UIController implements Initializable{
 		canvas.setWidth(canvasOriginal[0]*zoom);
 		canvas.setHeight(canvasOriginal[1]*zoom);
 		gc.clearRect(0, 0, canvasOriginal[0], canvasOriginal[1]);//はじめに全領域消去
-		//まずグリッドを描画する。
-		drawGrid();
+		if(showBackInLE.isSelected()) {
+			drawBack(); //背景を描画
+		}
+		drawGrid(); //グリッドを描画する。
 		//各路線ごとに描画。
 		double[] startP = new double[2];//スタート座標
 		double[] endP = new double[2];//エンド座標
@@ -2118,6 +2213,22 @@ public class UIController implements Initializable{
 				gc.strokeLine(i, 0, i, canvasOriginal[1]);
 				i = i + interval;
 			}
+		}
+	}
+	
+	void drawBack() {
+		if(backGround.image==null) {
+			// 背景色
+			gc.setFill(backGround.color);
+			gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
+		} else {
+			// 背景画像
+			double r = zoom*backGround.zoomRatio/100;
+			gc.setTransform(r, 0, 0, r, backGround.x*zoom, backGround.y*zoom);
+			gc.setGlobalAlpha(1-backGround.opacity/100.0);
+			gc.drawImage(backGround.image, 0, 0);
+			gc.setTransform(zoom, 0, 0, zoom, 0, 0);
+			gc.setGlobalAlpha(1.0);
 		}
 	}
 	
@@ -2258,8 +2369,7 @@ public class UIController implements Initializable{
 		gc.setTransform(zoom, 0, 0, zoom, 0, 0);
 		canvas.setWidth(canvasOriginal[0] * zoom);
 		canvas.setHeight(canvasOriginal[1] * zoom);
-		gc.setFill(bgColor.get());
-		gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
+		drawBack();
 		for(int k = lineList.size() - 1; 0 <= k; k--){//路線ごとに処理
 			for(int i = lineList.get(k).getTrains().size() - 1; 0 <= i; i--){//系統ごとに処理。降順に処理していく。
 				Train train = lineList.get(k).getTrains().get(i);
@@ -3328,7 +3438,6 @@ public class UIController implements Initializable{
 		b1.setDefaultButton(true);
 		b1.setOnAction((ActionEvent) ->{
 			try{
-				bgColor.set(re_bg_CP.getValue());
 				SnapshotParameters ssp = new SnapshotParameters();
 				ssp.setFill(bgColor.get());
 				zoom = slider.getValue()/100;

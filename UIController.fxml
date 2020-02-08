@@ -34,11 +34,11 @@
             </Pane>
          </content>
       </ScrollPane>
-      <ScrollPane hbarPolicy="NEVER" layoutX="582.0" layoutY="49.0" maxWidth="230.0" minWidth="210.0" prefHeight="1080.0" prefWidth="225.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="49.0">
+      <ScrollPane hbarPolicy="NEVER" layoutX="582.0" layoutY="49.0" maxWidth="230.0" minWidth="210.0" prefHeight="1400.0" prefWidth="225.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="49.0">
          <content>
           <AnchorPane minWidth="200.0" prefHeight="1200.0" prefWidth="200.0">
                <children>
-                  <AnchorPane fx:id="rightPane" prefHeight="1200.0" prefWidth="200.0" visible="false">
+                  <AnchorPane fx:id="rightPane" prefHeight="1360.0" prefWidth="200.0">
                      <children>
                         <ListView fx:id="RouteTable" editable="true" layoutX="8.0" layoutY="66.0" prefHeight="172.0" prefWidth="190.0" />
                         <ListView fx:id="StationList" layoutX="6.0" layoutY="620.0" prefHeight="200.0" prefWidth="190.0" />
@@ -102,9 +102,23 @@
                         </ToggleButton>
                         <ToggleButton fx:id="staYoko" disable="true" layoutX="8.0" layoutY="963.0" mnemonicParsing="false" text="横書き" textFill="CRIMSON" toggleGroup="$staTextMuki" />
                         <ToggleButton fx:id="staObeyLine" layoutX="8.0" layoutY="893.0" mnemonicParsing="false" selected="true" text="路線準拠" />
+                        <Label layoutX="7.0" layoutY="1180.0" text="背景の設定" />
+                        <ColorPicker fx:id="bgColor_CP" layoutX="61.0" layoutY="1231.0" prefHeight="27.0" prefWidth="134.0" promptText="背景色を指定" />
+                        <Button fx:id="setBgImage" layoutX="12.0" layoutY="1265.0" mnemonicParsing="false" text="背景画像" />
+                        <CheckBox fx:id="showBackInLE" layoutX="12.0" layoutY="1205.0" mnemonicParsing="false" selected="true" text="路線編集モードで背景を表示" />
+                        <Label fx:id="bgImageLabel" layoutX="90.0" layoutY="1270.0" prefHeight="17.0" prefWidth="105.0" />
+                        <Label layoutX="12.0" layoutY="1236.0" prefHeight="17.0" prefWidth="47.0" text="背景色" />
+                        <Spinner fx:id="bgImageX" disable="true" editable="true" layoutX="25.0" layoutY="1300.0" prefHeight="27.0" prefWidth="69.0" />
+                        <Spinner fx:id="bgImageSize" disable="true" editable="true" layoutX="136.0" layoutY="1300.0" prefHeight="27.0" prefWidth="69.0" />
+                        <Spinner fx:id="bgImageY" disable="true" editable="true" layoutX="25.0" layoutY="1327.0" prefHeight="27.0" prefWidth="69.0" />
+                        <Label layoutX="10.0" layoutY="1305.0" prefHeight="17.0" prefWidth="15.0" text="X" />
+                        <Label layoutX="10.0" layoutY="1332.0" prefHeight="17.0" prefWidth="15.0" text="Y" />
+                        <Label layoutX="96.0" layoutY="1305.0" prefHeight="17.0" prefWidth="48.0" text="倍率％" />
+                        <Spinner fx:id="bgImageOpacity" disable="true" editable="true" layoutX="136.0" layoutY="1327.0" prefHeight="27.0" prefWidth="69.0" />
+                        <Label layoutX="96.0" layoutY="1332.0" prefHeight="17.0" prefWidth="48.0" text="透明度" />
                      </children>
                   </AnchorPane>
-                <AnchorPane fx:id="leftPane" minHeight="0.0" minWidth="0.0" prefHeight="1300.0" prefWidth="200.0">
+                <AnchorPane fx:id="leftPane" minHeight="0.0" minWidth="0.0" prefHeight="1300.0" prefWidth="200.0" visible="false">
                      <children>
                         <Label layoutX="10.0" layoutY="281.0" text="運転経路一覧" />
                         <ListView fx:id="R_RouteTable" layoutX="5.0" layoutY="23.0" prefHeight="183.0" prefWidth="160.0" />
@@ -114,8 +128,6 @@
                         <Button fx:id="TrainDelete" layoutX="158.0" layoutY="276.0" mnemonicParsing="false" text="削除" />
                         <Label layoutX="19.0" layoutY="785.0" text="駅一覧" />
                         <Button fx:id="tStaEdit" layoutX="130.0" layoutY="780.0" mnemonicParsing="false" text="編集" />
-                        <ColorPicker fx:id="re_bg_CP" layoutX="97.0" layoutY="455.0" prefHeight="27.0" prefWidth="93.0" />
-                        <Label layoutX="15.0" layoutY="460.0" text="路線図背景色" />
                         <ColorPicker fx:id="re_line_CP" layoutX="97.0" layoutY="490.0" prefHeight="27.0" prefWidth="93.0" />
                         <Label layoutX="15.0" layoutY="495.0" text="ラインカラー" />
                         <Label layoutX="18.0" layoutY="522.0" text="ライン位置" />
