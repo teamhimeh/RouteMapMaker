@@ -145,7 +145,6 @@ public class UIController implements Initializable{
 	private final double ReleaseVersion = 14;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
-	private ColorWrapper bgColor = new ColorWrapper(Color.WHITESMOKE);//路線図の背景カラー。デフォルトはWHITESMOKE
 	private BackGround backGround = new BackGround();
 	private double zoom = 1.0;//canvas上での表示倍率。mapDrawのみに適用する。
 	protected double[] canvasOriginal = new double[2];//mapDrawで1倍の時のcanvasのサイズを記録しておく。
@@ -2863,7 +2862,19 @@ public class UIController implements Initializable{
 		bgc[1] = Double.parseDouble(p.getProperty("bgColorG"));
 		bgc[2] = Double.parseDouble(p.getProperty("bgColorB"));
 		bgc[3] = Double.parseDouble(p.getProperty("bgColorO"));
-		bgColor.set(new Color(bgc[0],bgc[1],bgc[2],bgc[3]));
+		backGround.color = new Color(bgc[0],bgc[1],bgc[2],bgc[3]);
+		// v15より前はbgImageXなどが存在しないので分岐
+		if(p.getProperty("bgImageX")!=null) {
+			backGround.x = Integer.parseInt(p.getProperty("bgImageX"));
+			backGround.y = Integer.parseInt(p.getProperty("bgImageY"));
+			backGround.zoomRatio = Integer.parseInt(p.getProperty("bgImageZoomRatio"));
+			backGround.opacity = Integer.parseInt(p.getProperty("bgImageOpacity"));
+		}
+		if(p.getProperty("bgImage")!=null) {
+			backGround.image = imageMap.get(Integer.parseInt(p.getProperty("bgImage")));
+		} else {
+			backGround.image = null;
+		}
 		stationFontFamily.set(p.getProperty("stationFont", "system"));
 		//lineDashesを頂点とするデータ群
 		lineDashes.clear();
@@ -3138,10 +3149,18 @@ public class UIController implements Initializable{
 	void saveProp(Properties p, ArrayList<Image> images) throws IOException{//データの保存を行う。
 		//int imageCount = 0;//イメージ番号は追加前にimages.size()で番号取得できるよね。
 		p.setProperty("version", String.valueOf(version));
-		p.setProperty("bgColorR", String.valueOf(bgColor.get().getRed()));
-		p.setProperty("bgColorG", String.valueOf(bgColor.get().getGreen()));
-		p.setProperty("bgColorB", String.valueOf(bgColor.get().getBlue()));
-		p.setProperty("bgColorO", String.valueOf(bgColor.get().getOpacity()));
+		p.setProperty("bgColorR", String.valueOf(backGround.color.getRed()));
+		p.setProperty("bgColorG", String.valueOf(backGround.color.getGreen()));
+		p.setProperty("bgColorB", String.valueOf(backGround.color.getBlue()));
+		p.setProperty("bgColorO", String.valueOf(backGround.color.getOpacity()));
+		p.setProperty("bgImageX", String.valueOf(backGround.x));
+		p.setProperty("bgImageY", String.valueOf(backGround.x));
+		p.setProperty("bgImageZoomRatio", String.valueOf(backGround.zoomRatio));
+		p.setProperty("bgImageOpacity", String.valueOf(backGround.opacity));
+		if(backGround.image!=null) {
+			p.setProperty("bgImage", String.valueOf(images.size()));
+			images.add(backGround.image);
+		}
 		p.setProperty("stationFont", stationFontFamily.get());
 		p.setProperty("NumOfLines", String.valueOf(lineList.size()));
 		//lineListを頂点とするデータ群
@@ -3439,7 +3458,6 @@ public class UIController implements Initializable{
 		b1.setOnAction((ActionEvent) ->{
 			try{
 				SnapshotParameters ssp = new SnapshotParameters();
-				ssp.setFill(bgColor.get());
 				zoom = slider.getValue()/100;
 				mapDraw();
 				WritableImage wi = canvas.snapshot(ssp, null);
