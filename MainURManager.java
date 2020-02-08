@@ -104,6 +104,16 @@ public class MainURManager extends URElements {
 		undoable.set(true);
 		redoable.set(false);
 	}
+	public void push(BackGround prev, BackGround replaced, BackGround target) {
+		undoTypeStack.push(Type.SUBCLASS);
+		undoIndexStack.push(MainCommandList.size());
+		redoTypeStack.clear();
+		redoIndexStack.clear();
+		SetBackground sbg = new SetBackground(prev, replaced, target);
+		MainCommandList.add(sbg);
+		undoable.set(true);
+		redoable.set(false);
+	}
 	@Override
 	public void undo(){
 		super.undo();
@@ -118,6 +128,8 @@ public class MainURManager extends URElements {
 			MainCommandList.get(index).redo();
 		}
 	}
+	
+	
 	interface canUR{//各命令を保持する内部クラス群はすべてコレを実装する。
 		void undo();
 		void redo();
@@ -340,6 +352,22 @@ public class MainURManager extends URElements {
 			if(!fixed) replacing.setPoint(replacing.getInterPoint()[0], replacing.getInterPoint()[1]);
 			connections.forEach(c -> c.station = replacing);
 			stops.forEach(s -> s.setSta(replacing));
+		}
+	}
+	public class SetBackground implements canUR {
+		BackGround prevBg, replacedBg, target;
+		SetBackground(BackGround prev, BackGround replaced, BackGround target) {
+			this.prevBg = prev;
+			this.replacedBg = replaced;
+			this.target = target;
+		}
+		@Override
+		public void undo() {
+			target.copyParams(prevBg);
+		}
+		@Override
+		public void redo() {
+			target.copyParams(replacedBg);
 		}
 	}
 }
