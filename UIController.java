@@ -447,8 +447,8 @@ public class UIController implements Initializable{
 				lineDraw();
 			}
 		});
-		RouteSize.setEditable(true);
 		RouteSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE,15,1));
+		RouteSize.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(RouteSize));
 		RouteSize.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int index = RouteTable.getSelectionModel().getSelectedIndex();
 			if(index != -1){
@@ -661,8 +661,8 @@ public class UIController implements Initializable{
 				}
 				lineDraw();
 			});
-		staSize.setEditable(true);
 		staSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1,Integer.MAX_VALUE,0,1));
+		staSize.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(staSize));
 		staSize.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 			int indexS = StationList.getSelectionModel().getSelectedIndex();
@@ -850,34 +850,22 @@ public class UIController implements Initializable{
 		bgImageY.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE,Integer.MAX_VALUE,0));
 		bgImageSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,1000,100));
 		bgImageOpacity.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,100,0));
-		bgImageX.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if(isLoading) { return; }
-			Background prev_bg = background.clone();
-			background.x = newVal;
-			urManager.push(prev_bg, background.clone(), background);
-			lineDraw();
-		});
-		bgImageY.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if(isLoading) { return; }
-			Background prev_bg = background.clone();
-			background.y = newVal;
-			urManager.push(prev_bg, background.clone(), background);
-			lineDraw();
-		});
-		bgImageSize.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if(isLoading) { return; }
-			Background prev_bg = background.clone();
-			background.zoomRatio = newVal;
-			urManager.push(prev_bg, background.clone(), background);
-			lineDraw();
-		});
-		bgImageOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if(isLoading) { return; }
-			Background prev_bg = background.clone();
-			background.opacity = newVal;
-			urManager.push(prev_bg, background.clone(), background);
-			lineDraw();
-		});
+		Spinner[] bgSpinners = {bgImageX, bgImageY, bgImageSize, bgImageOpacity};
+		for(Spinner<Integer> spinner: bgSpinners) {
+			// SpinnerEventHandlerの登録
+			spinner.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(spinner));
+			// Listenerの登録．newValの設定先以外は共通
+			spinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+				if(isLoading) { return; }
+				Background prev_bg = background.clone();
+				if(spinner==bgImageX) {background.x = newVal;}
+				else if(spinner==bgImageY) {background.y = newVal;}
+				else if(spinner==bgImageSize) {background.zoomRatio = newVal;}
+				else if(spinner==bgImageOpacity) {background.opacity = newVal;}
+				urManager.push(prev_bg, background.clone(), background);
+				lineDraw();
+			});
+		}
 		
 		double[] startCoor = new double[2];//ドラッグスタート時の座標を記録する。station座標（zoomを考慮）．
 		draggedRect.setVisible(false);
@@ -1542,16 +1530,13 @@ public class UIController implements Initializable{
 			}
 			mapDraw();
 		});
-		re_line_SP.setEditable(true);
-		re_line_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE,10,1));
-		re_lineC_SP.setEditable(true);
-		re_lineC_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
-		re_lineSA_SP.setEditable(true);
-		re_lineSA_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
-		re_lineSB_SP.setEditable(true);
-		re_lineSB_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
-		re_mark_SP.setEditable(true);
-		re_mark_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE,8,1));
+		Spinner[] re_line_spinners = {re_line_SP, re_lineC_SP, re_lineSA_SP, re_lineSB_SP, re_mark_SP};
+		for(Spinner<Integer> sp: re_line_spinners) {
+			int min = (sp==re_line_SP || sp==re_mark_SP ? 1 : Integer.MIN_VALUE);
+			int initial = (sp==re_line_SP ? 10 : sp==re_mark_SP ? 8 : 0);
+			sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(min,Integer.MAX_VALUE,initial));
+			sp.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(sp));
+		}
 		re_line_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexR = R_RouteTable.getSelectionModel().getSelectedIndex();
 			int indexT = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1687,8 +1672,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		R_nameX.setEditable(true);
 		R_nameX.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		R_nameX.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(R_nameX));
 		R_nameX.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int index = R_RouteTable.getSelectionModel().getSelectedIndex();
 			if(index != -1){
@@ -1698,8 +1683,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		R_nameY.setEditable(true);
 		R_nameY.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		R_nameY.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(R_nameY));
 		R_nameY.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int index = R_RouteTable.getSelectionModel().getSelectedIndex();
 			if(index != -1){
@@ -1724,8 +1709,8 @@ public class UIController implements Initializable{
 				re_staMark_CB.setValue(lineList.get(indexR).getTrains().get(indexK).getStops().get(indexS).getMark());
 			}
 		});
-		re_staPSize_SP.setEditable(true);
 		re_staPSize_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, 0, 1));
+		re_staPSize_SP.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(re_staPSize_SP));
 		re_staPSize_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexS = tStaList.getSelectionModel().getSelectedIndex();
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1777,8 +1762,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		re_staPX_SP.setEditable(true);
 		re_staPX_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		re_staPX_SP.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(re_staPX_SP));
 		re_staPX_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexS = tStaList.getSelectionModel().getSelectedIndex();
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1791,8 +1776,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		re_staPY_SP.setEditable(true);
 		re_staPY_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		re_staPY_SP.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(re_staPY_SP));
 		re_staPY_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexS = tStaList.getSelectionModel().getSelectedIndex();
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1805,8 +1790,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		re_staLAX_SP.setEditable(true);
 		re_staLAX_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		re_staLAX_SP.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(re_staLAX_SP));
 		re_staLAX_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexS = tStaList.getSelectionModel().getSelectedIndex();
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();
@@ -1819,8 +1804,8 @@ public class UIController implements Initializable{
 				mapDraw();
 			}
 		});
-		re_staLAY_SP.setEditable(true);
 		re_staLAY_SP.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 1));
+		re_staLAY_SP.getEditor().addEventHandler(KeyEvent.KEY_PRESSED, new IntegerSpinnerEventHandler(re_staLAY_SP));
 		re_staLAY_SP.valueProperty().addListener((obs, oldVal, newVal) -> {
 			int indexS = tStaList.getSelectionModel().getSelectedIndex();
 			int indexK = TrainTable.getSelectionModel().getSelectedIndex();

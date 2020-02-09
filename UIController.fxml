@@ -55,11 +55,11 @@
                         <ColorPicker fx:id="RouteColor" layoutX="93.0" layoutY="388.0" prefHeight="27.0" prefWidth="93.0" />
                         <Label layoutX="10.0" layoutY="393.0" text="駅名色" />
                         <Label layoutX="9.0" layoutY="431.0" text="駅名大きさ" />
-                        <Spinner fx:id="RouteSize" layoutX="104.0" layoutY="426.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="RouteSize" editable="true" layoutX="104.0" layoutY="426.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="9.0" layoutY="460.0" text="駅名スタイル" />
                         <ComboBox fx:id="RouteStyle" layoutX="22.0" layoutY="477.0" prefHeight="27.0" prefWidth="165.0" />
                         <Label layoutX="11.0" layoutY="1006.0" text="駅名大きさ" />
-                        <Spinner fx:id="staSize" layoutX="106.0" layoutY="1001.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="staSize" editable="true" layoutX="106.0" layoutY="1001.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="11.0" layoutY="1068.0" text="駅名スタイル" />
                         <ComboBox fx:id="staStyle" layoutX="24.0" layoutY="1093.0" prefHeight="27.0" prefWidth="165.0" />
                         <Label layoutX="24.0" layoutY="1028.0" text="0を入力で路線の設定に準拠" textFill="#0090ff" />
@@ -131,27 +131,27 @@
                         <ColorPicker fx:id="re_line_CP" layoutX="97.0" layoutY="490.0" prefHeight="27.0" prefWidth="93.0" />
                         <Label layoutX="15.0" layoutY="495.0" text="ラインカラー" />
                         <Label layoutX="18.0" layoutY="522.0" text="ライン位置" />
-                        <Spinner fx:id="re_lineC_SP" layoutX="106.0" layoutY="517.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_lineC_SP" editable="true" layoutX="106.0" layoutY="517.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="18.0" layoutY="549.0" text="ライン太さ" />
-                        <Spinner fx:id="re_line_SP" layoutX="106.0" layoutY="544.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_line_SP" editable="true" layoutX="106.0" layoutY="544.0" prefHeight="27.0" prefWidth="83.0" />
                         <ComboBox fx:id="re_linePattern_CB" layoutX="94.0" layoutY="571.0" prefHeight="27.0" prefWidth="95.0" />
                         <Label layoutX="15.0" layoutY="576.0" text="線パターン" />
                         <Label layoutX="11.0" layoutY="603.0" text="ライン端補正A" />
-                        <Spinner fx:id="re_lineSA_SP" layoutX="106.0" layoutY="598.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_lineSA_SP" editable="true" layoutX="106.0" layoutY="598.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="11.0" layoutY="630.0" text="ライン端補正B" />
-                        <Spinner fx:id="re_lineSB_SP" layoutX="106.0" layoutY="625.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_lineSB_SP" editable="true" layoutX="106.0" layoutY="625.0" prefHeight="27.0" prefWidth="83.0" />
                         <ColorPicker fx:id="re_mark_CP" layoutX="96.0" layoutY="652.0" prefHeight="27.0" prefWidth="93.0" />
                         <Label layoutX="12.0" layoutY="657.0" text="マークカラー" />
                         <Label layoutX="16.0" layoutY="684.0" text="マーク大きさ" />
-                        <Spinner fx:id="re_mark_SP" layoutX="106.0" layoutY="679.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_mark_SP" editable="true" layoutX="106.0" layoutY="679.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="15.0" layoutY="711.0" text="マークタイプ" />
                         <ComboBox fx:id="re_mark_CB" layoutX="94.0" layoutY="706.0" prefHeight="27.0" prefWidth="95.0" />
                         <Label layoutX="14.0" layoutY="938.0" text="駅プロパティ" />
                         <Label layoutX="9.0" layoutY="963.0" text="ライン位置補正（個別）" />
                         <Label layoutX="8.0" layoutY="985.0" text="X:" />
-                        <Spinner fx:id="re_staLAX_SP" layoutX="21.0" layoutY="980.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="re_staLAX_SP" editable="true" layoutX="21.0" layoutY="980.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="97.0" layoutY="985.0" text="Y:" />
-                        <Spinner fx:id="re_staLAY_SP" layoutX="110.0" layoutY="980.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="re_staLAY_SP" editable="true" layoutX="110.0" layoutY="980.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="1.0" layoutY="1020.0" text="マークタイプ">
                            <font>
                               <Font size="12.0" />
@@ -161,11 +161,11 @@
                         <Label layoutX="4.0" layoutY="1052.0" text="駅名位置補正（個別）" />
                         <ToggleButton fx:id="re_staPShift_TB" layoutX="10.0" layoutY="1069.0" mnemonicParsing="false" text="個別補正する" />
                         <Label layoutX="3.0" layoutY="1108.0" text="X:" />
-                        <Spinner fx:id="re_staPX_SP" layoutX="16.0" layoutY="1103.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="re_staPX_SP" editable="true" layoutX="16.0" layoutY="1103.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="92.0" layoutY="1108.0" text="Y:" />
-                        <Spinner fx:id="re_staPY_SP" layoutX="105.0" layoutY="1103.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="re_staPY_SP" editable="true" layoutX="105.0" layoutY="1103.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="5.0" layoutY="1187.0" text="駅名大きさ" />
-                        <Spinner fx:id="re_staPSize_SP" layoutX="88.0" layoutY="1182.0" prefHeight="27.0" prefWidth="83.0" />
+                        <Spinner fx:id="re_staPSize_SP" editable="true" layoutX="88.0" layoutY="1182.0" prefHeight="27.0" prefWidth="83.0" />
                         <Label layoutX="2.0" layoutY="1243.0" text="駅名スタイル" />
                         <ComboBox fx:id="re_staPStyle_CB" layoutX="8.0" layoutY="1259.0" prefHeight="27.0" prefWidth="165.0" />
                         <Label layoutX="4.0" layoutY="1209.0" text="0を入力で路線の設定に準拠" textFill="#0090ff" />
@@ -173,9 +173,9 @@
                         <Button fx:id="TT_DOWN" layoutX="164.0" layoutY="388.0" mnemonicParsing="false" text="▼" />
                         <Label layoutX="10.0" layoutY="218.0" text="駅名位置補正（路線ごと）" />
                         <Label layoutX="7.0" layoutY="244.0" text="X:" />
-                        <Spinner fx:id="R_nameX" layoutX="20.0" layoutY="239.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="R_nameX" editable="true" layoutX="20.0" layoutY="239.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="96.0" layoutY="244.0" text="Y:" />
-                        <Spinner fx:id="R_nameY" layoutX="109.0" layoutY="239.0" prefHeight="27.0" prefWidth="71.0" />
+                        <Spinner fx:id="R_nameY" editable="true" layoutX="109.0" layoutY="239.0" prefHeight="27.0" prefWidth="71.0" />
                         <Label layoutX="14.0" layoutY="6.0" text="路線一覧" />
                         <Button fx:id="RRT_UP" layoutX="169.0" layoutY="24.0" mnemonicParsing="false" text="▲" />
                         <Button fx:id="RRT_DOWN" layoutX="169.0" layoutY="69.0" mnemonicParsing="false" text="▼" />
