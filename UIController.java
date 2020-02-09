@@ -2223,11 +2223,10 @@ public class UIController implements Initializable{
 	}
 	
 	void drawBack() {
-		if(background.image==null) {
-			// 背景色
-			gc.setFill(background.color);
-			gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
-		} else {
+		// 画像あるナシに関わらず背景色を設定
+		gc.setFill(background.color);
+		gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
+		if(background.image!=null) {
 			// 背景画像
 			double r = zoom*background.zoomRatio/100;
 			gc.setTransform(r, 0, 0, r, background.x*zoom, background.y*zoom);
