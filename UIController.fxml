@@ -34,7 +34,7 @@
             </Pane>
          </content>
       </ScrollPane>
-      <ScrollPane hbarPolicy="NEVER" layoutX="582.0" layoutY="49.0" maxWidth="230.0" minWidth="210.0" prefHeight="1400.0" prefWidth="225.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="49.0">
+      <ScrollPane hbarPolicy="NEVER" layoutX="582.0" layoutY="49.0" maxWidth="230.0" minWidth="210.0" prefHeight="1400.0" prefWidth="225.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="55.0">
          <content>
           <AnchorPane minWidth="200.0" prefHeight="1200.0" prefWidth="200.0">
                <children>
@@ -187,7 +187,7 @@
             </AnchorPane>
          </content>
       </ScrollPane>
-      <MenuBar fx:id="menubar" prefHeight="29.0" prefWidth="557.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="243.0" AnchorPane.topAnchor="0.0">
+      <MenuBar fx:id="menubar" prefHeight="30.0" prefWidth="557.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="243.0" AnchorPane.topAnchor="0.0">
         <menus>
           <Menu mnemonicParsing="false" text="ファイル">
             <items>
@@ -276,10 +276,10 @@
           </Menu>
         </menus>
       </MenuBar>
-      <ToggleButton fx:id="leftEditButton" layoutX="557.0" mnemonicParsing="false" text="運転経路編集モード" AnchorPane.rightAnchor="108.0" AnchorPane.topAnchor="0.0" />
-      <ToggleButton fx:id="rightEditButton" layoutX="691.0" mnemonicParsing="false" text="路線編集モード" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <Slider fx:id="ZoomSlider" layoutX="660.0" layoutY="27.0" prefHeight="23.0" prefWidth="140.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0" />
-      <Label layoutX="591.0" layoutY="30.0" text="表示倍率" AnchorPane.rightAnchor="143.0" AnchorPane.topAnchor="30.0">
+      <ToggleButton fx:id="leftEditButton" layoutX="557.0" maxHeight="30.0" maxWidth="140.0" minHeight="30.0" minWidth="140.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="140.0" text="運転経路編集モード" AnchorPane.rightAnchor="110.0" AnchorPane.topAnchor="0.0" />
+      <ToggleButton fx:id="rightEditButton" layoutX="691.0" maxHeight="30.0" maxWidth="110.0" minHeight="30.0" minWidth="110.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="110.0" text="路線編集モード" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Slider fx:id="ZoomSlider" layoutX="660.0" layoutY="27.0" prefHeight="23.0" prefWidth="140.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
+      <Label layoutX="591.0" layoutY="30.0" text="表示倍率" AnchorPane.rightAnchor="143.0" AnchorPane.topAnchor="33.0">
          <font>
             <Font size="12.0" />
          </font>
