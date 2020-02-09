@@ -104,7 +104,7 @@ public class MainURManager extends URElements {
 		undoable.set(true);
 		redoable.set(false);
 	}
-	public void push(BackGround prev, BackGround replaced, BackGround target) {
+	public void push(Background prev, Background replaced, Background target) {
 		undoTypeStack.push(Type.SUBCLASS);
 		undoIndexStack.push(MainCommandList.size());
 		redoTypeStack.clear();
@@ -355,8 +355,8 @@ public class MainURManager extends URElements {
 		}
 	}
 	public class SetBackground implements canUR {
-		BackGround prevBg, replacedBg, target;
-		SetBackground(BackGround prev, BackGround replaced, BackGround target) {
+		Background prevBg, replacedBg, target;
+		SetBackground(Background prev, Background replaced, Background target) {
 			this.prevBg = prev;
 			this.replacedBg = replaced;
 			this.target = target;

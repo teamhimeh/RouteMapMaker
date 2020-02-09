@@ -8,14 +8,14 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-public class BackGround implements Cloneable{
+public class Background implements Cloneable{
 	// Objectを複製してUndo/Redoを管理
 	Color color;
 	Image image;
 	int x, y; // 原点座標
 	int zoomRatio, opacity; // %単位
 	
-	public BackGround() {
+	public Background() {
 		color = Color.WHITESMOKE;
 		image = null;
 		x = y = opacity = 0;
@@ -23,13 +23,13 @@ public class BackGround implements Cloneable{
 	}
 	
 	@Override
-	public BackGround clone() {
-		BackGround c = new BackGround();
+	public Background clone() {
+		Background c = new Background();
 		c.copyParams(this);
 		return c;
 	}
 	
-	public void copyParams(BackGround ref) {
+	public void copyParams(Background ref) {
 		this.color = ref.color;
 		this.image = ref.image;
 		this.x = ref.x;
