@@ -145,7 +145,7 @@ public class UIController implements Initializable{
 	private final double ReleaseVersion = 14;//リリースバージョン。ユーザーへの案内用
 	private File dataFile;
 	private Stage mainStage;//この画面のstage。MODALにするのに使ったり
-	private BackGround backGround = new BackGround();
+	private Background background = new Background();
 	private double zoom = 1.0;//canvas上での表示倍率。mapDrawのみに適用する。
 	protected double[] canvasOriginal = new double[2];//mapDrawで1倍の時のcanvasのサイズを記録しておく。
 	private StringProperty stationFontFamily = new SimpleStringProperty("system");//駅名に使用するフォントファミリ名
@@ -805,15 +805,15 @@ public class UIController implements Initializable{
 			lineDraw();
 		});
 		
-		bgColor_CP.setValue(backGround.color);
+		bgColor_CP.setValue(background.color);
 		bgColor_CP.setOnAction((ActionEvent) ->{
 			// undo stackにpushする必要があるか？
-			if(!bgColor_CP.getValue().equals(backGround.color) || backGround.image!=null) {
-				BackGround prev_bg = backGround.clone();
-				backGround.color = bgColor_CP.getValue();
-				backGround.image = null;
+			if(!bgColor_CP.getValue().equals(background.color) || background.image!=null) {
+				Background prev_bg = background.clone();
+				background.color = bgColor_CP.getValue();
+				background.image = null;
 				updateBackgroundComponents();
-				urManager.push(prev_bg, backGround.clone(), backGround);
+				urManager.push(prev_bg, background.clone(), background);
 			}
 			lineDraw();
 		});
@@ -833,9 +833,9 @@ public class UIController implements Initializable{
 					alert.showAndWait();
 					return;
 				}
-				BackGround prev_bg = backGround.clone();
-				backGround.image = im;
-				urManager.push(prev_bg, backGround.clone(), backGround);
+				Background prev_bg = background.clone();
+				background.image = im;
+				urManager.push(prev_bg, background.clone(), background);
 				updateBackgroundComponents();
 				lineDraw();
 			} catch (Exception e) {
@@ -852,30 +852,30 @@ public class UIController implements Initializable{
 		bgImageOpacity.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,100,0));
 		bgImageX.valueProperty().addListener((obs, oldVal, newVal) -> {
 			if(isLoading) { return; }
-			BackGround prev_bg = backGround.clone();
-			backGround.x = newVal;
-			urManager.push(prev_bg, backGround.clone(), backGround);
+			Background prev_bg = background.clone();
+			background.x = newVal;
+			urManager.push(prev_bg, background.clone(), background);
 			lineDraw();
 		});
 		bgImageY.valueProperty().addListener((obs, oldVal, newVal) -> {
 			if(isLoading) { return; }
-			BackGround prev_bg = backGround.clone();
-			backGround.y = newVal;
-			urManager.push(prev_bg, backGround.clone(), backGround);
+			Background prev_bg = background.clone();
+			background.y = newVal;
+			urManager.push(prev_bg, background.clone(), background);
 			lineDraw();
 		});
 		bgImageSize.valueProperty().addListener((obs, oldVal, newVal) -> {
 			if(isLoading) { return; }
-			BackGround prev_bg = backGround.clone();
-			backGround.zoomRatio = newVal;
-			urManager.push(prev_bg, backGround.clone(), backGround);
+			Background prev_bg = background.clone();
+			background.zoomRatio = newVal;
+			urManager.push(prev_bg, background.clone(), background);
 			lineDraw();
 		});
 		bgImageOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
 			if(isLoading) { return; }
-			BackGround prev_bg = backGround.clone();
-			backGround.opacity = newVal;
-			urManager.push(prev_bg, backGround.clone(), backGround);
+			Background prev_bg = background.clone();
+			background.opacity = newVal;
+			urManager.push(prev_bg, background.clone(), background);
 			lineDraw();
 		});
 		
@@ -1887,15 +1887,15 @@ public class UIController implements Initializable{
 		// isLoadingを一時的にtrueにすることでspinnerのsetVauleに対する発火を抑える
 		final boolean isl = isLoading;
 		isLoading = true;
-		bgColor_CP.setValue(backGround.color);
-		bgImageX.getValueFactory().setValue(backGround.x);
-		bgImageY.getValueFactory().setValue(backGround.y);
-		bgImageSize.getValueFactory().setValue(backGround.zoomRatio);
-		bgImageOpacity.getValueFactory().setValue(backGround.opacity);
-		bgImageX.setDisable(backGround.image==null);
-		bgImageY.setDisable(backGround.image==null);
-		bgImageSize.setDisable(backGround.image==null);
-		bgImageOpacity.setDisable(backGround.image==null);
+		bgColor_CP.setValue(background.color);
+		bgImageX.getValueFactory().setValue(background.x);
+		bgImageY.getValueFactory().setValue(background.y);
+		bgImageSize.getValueFactory().setValue(background.zoomRatio);
+		bgImageOpacity.getValueFactory().setValue(background.opacity);
+		bgImageX.setDisable(background.image==null);
+		bgImageY.setDisable(background.image==null);
+		bgImageSize.setDisable(background.image==null);
+		bgImageOpacity.setDisable(background.image==null);
 		isLoading = isl;
 	}
 
@@ -2223,16 +2223,16 @@ public class UIController implements Initializable{
 	}
 	
 	void drawBack() {
-		if(backGround.image==null) {
+		if(background.image==null) {
 			// 背景色
-			gc.setFill(backGround.color);
+			gc.setFill(background.color);
 			gc.fillRect(0, 0, canvasOriginal[0], canvasOriginal[1]);
 		} else {
 			// 背景画像
-			double r = zoom*backGround.zoomRatio/100;
-			gc.setTransform(r, 0, 0, r, backGround.x*zoom, backGround.y*zoom);
-			gc.setGlobalAlpha(1-backGround.opacity/100.0);
-			gc.drawImage(backGround.image, 0, 0);
+			double r = zoom*background.zoomRatio/100;
+			gc.setTransform(r, 0, 0, r, background.x*zoom, background.y*zoom);
+			gc.setGlobalAlpha(1-background.opacity/100.0);
+			gc.drawImage(background.image, 0, 0);
 			gc.setTransform(zoom, 0, 0, zoom, 0, 0);
 			gc.setGlobalAlpha(1.0);
 		}
@@ -2869,18 +2869,18 @@ public class UIController implements Initializable{
 		bgc[1] = Double.parseDouble(p.getProperty("bgColorG"));
 		bgc[2] = Double.parseDouble(p.getProperty("bgColorB"));
 		bgc[3] = Double.parseDouble(p.getProperty("bgColorO"));
-		backGround.color = new Color(bgc[0],bgc[1],bgc[2],bgc[3]);
+		background.color = new Color(bgc[0],bgc[1],bgc[2],bgc[3]);
 		// v15より前はbgImageXなどが存在しないので分岐
 		if(p.getProperty("bgImageX")!=null) {
-			backGround.x = Integer.parseInt(p.getProperty("bgImageX"));
-			backGround.y = Integer.parseInt(p.getProperty("bgImageY"));
-			backGround.zoomRatio = Integer.parseInt(p.getProperty("bgImageZoomRatio"));
-			backGround.opacity = Integer.parseInt(p.getProperty("bgImageOpacity"));
+			background.x = Integer.parseInt(p.getProperty("bgImageX"));
+			background.y = Integer.parseInt(p.getProperty("bgImageY"));
+			background.zoomRatio = Integer.parseInt(p.getProperty("bgImageZoomRatio"));
+			background.opacity = Integer.parseInt(p.getProperty("bgImageOpacity"));
 		}
 		if(p.getProperty("bgImage")!=null) {
-			backGround.image = imageMap.get(Integer.parseInt(p.getProperty("bgImage")));
+			background.image = imageMap.get(Integer.parseInt(p.getProperty("bgImage")));
 		} else {
-			backGround.image = null;
+			background.image = null;
 		}
 		stationFontFamily.set(p.getProperty("stationFont", "system"));
 		//lineDashesを頂点とするデータ群
@@ -3156,17 +3156,17 @@ public class UIController implements Initializable{
 	void saveProp(Properties p, ArrayList<Image> images) throws IOException{//データの保存を行う。
 		//int imageCount = 0;//イメージ番号は追加前にimages.size()で番号取得できるよね。
 		p.setProperty("version", String.valueOf(version));
-		p.setProperty("bgColorR", String.valueOf(backGround.color.getRed()));
-		p.setProperty("bgColorG", String.valueOf(backGround.color.getGreen()));
-		p.setProperty("bgColorB", String.valueOf(backGround.color.getBlue()));
-		p.setProperty("bgColorO", String.valueOf(backGround.color.getOpacity()));
-		p.setProperty("bgImageX", String.valueOf(backGround.x));
-		p.setProperty("bgImageY", String.valueOf(backGround.x));
-		p.setProperty("bgImageZoomRatio", String.valueOf(backGround.zoomRatio));
-		p.setProperty("bgImageOpacity", String.valueOf(backGround.opacity));
-		if(backGround.image!=null) {
+		p.setProperty("bgColorR", String.valueOf(background.color.getRed()));
+		p.setProperty("bgColorG", String.valueOf(background.color.getGreen()));
+		p.setProperty("bgColorB", String.valueOf(background.color.getBlue()));
+		p.setProperty("bgColorO", String.valueOf(background.color.getOpacity()));
+		p.setProperty("bgImageX", String.valueOf(background.x));
+		p.setProperty("bgImageY", String.valueOf(background.x));
+		p.setProperty("bgImageZoomRatio", String.valueOf(background.zoomRatio));
+		p.setProperty("bgImageOpacity", String.valueOf(background.opacity));
+		if(background.image!=null) {
 			p.setProperty("bgImage", String.valueOf(images.size()));
-			images.add(backGround.image);
+			images.add(background.image);
 		}
 		p.setProperty("stationFont", stationFontFamily.get());
 		p.setProperty("NumOfLines", String.valueOf(lineList.size()));
