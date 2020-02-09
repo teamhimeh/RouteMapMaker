@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class ErrorReporter {
 	
@@ -53,8 +54,19 @@ public class ErrorReporter {
 	}
 	
 	public static String getMacAddr() throws SocketException, UnknownHostException {
-		NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-		byte[]mac = network.getHardwareAddress();
+		byte[]mac = null;
+		//v4 localアドレスを持つnetwork interfaceを探す
+		for(NetworkInterface ni: Collections.list(NetworkInterface.getNetworkInterfaces())) {
+			for(InetAddress ip: Collections.list(ni.getInetAddresses())) {
+				if(ip.isSiteLocalAddress()) {
+					mac = ni.getHardwareAddress();
+				}
+			}
+		}
+		if(mac==null) {
+			// macアドレスが取得できない場合がある
+			return "NotAvailable";
+		}
 		StringBuilder mac_sb = new StringBuilder();
 		for (int i = 0; i < mac.length; i++) {
 			mac_sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
