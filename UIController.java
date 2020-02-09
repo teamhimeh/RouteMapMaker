@@ -812,10 +812,7 @@ public class UIController implements Initializable{
 				BackGround prev_bg = backGround.clone();
 				backGround.color = bgColor_CP.getValue();
 				backGround.image = null;
-				bgImageX.setDisable(true);
-				bgImageY.setDisable(true);
-				bgImageSize.setDisable(true);
-				bgImageOpacity.setDisable(true);
+				updateBackgroundComponents();
 				urManager.push(prev_bg, backGround.clone(), backGround);
 			}
 			lineDraw();
@@ -839,10 +836,7 @@ public class UIController implements Initializable{
 				BackGround prev_bg = backGround.clone();
 				backGround.image = im;
 				urManager.push(prev_bg, backGround.clone(), backGround);
-				bgImageX.setDisable(false);
-				bgImageY.setDisable(false);
-				bgImageSize.setDisable(false);
-				bgImageOpacity.setDisable(false);
+				updateBackgroundComponents();
 				lineDraw();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -857,24 +851,28 @@ public class UIController implements Initializable{
 		bgImageSize.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,1000,100));
 		bgImageOpacity.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,100,0));
 		bgImageX.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(isLoading) { return; }
 			BackGround prev_bg = backGround.clone();
 			backGround.x = newVal;
 			urManager.push(prev_bg, backGround.clone(), backGround);
 			lineDraw();
 		});
 		bgImageY.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(isLoading) { return; }
 			BackGround prev_bg = backGround.clone();
 			backGround.y = newVal;
 			urManager.push(prev_bg, backGround.clone(), backGround);
 			lineDraw();
 		});
 		bgImageSize.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(isLoading) { return; }
 			BackGround prev_bg = backGround.clone();
 			backGround.zoomRatio = newVal;
 			urManager.push(prev_bg, backGround.clone(), backGround);
 			lineDraw();
 		});
 		bgImageOpacity.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(isLoading) { return; }
 			BackGround prev_bg = backGround.clone();
 			backGround.opacity = newVal;
 			urManager.push(prev_bg, backGround.clone(), backGround);
@@ -1883,6 +1881,23 @@ public class UIController implements Initializable{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	// 背景関連のGUIコンポーネントを更新する
+	void updateBackgroundComponents() {
+		// isLoadingを一時的にtrueにすることでspinnerのsetVauleに対する発火を抑える
+		final boolean isl = isLoading;
+		isLoading = true;
+		bgColor_CP.setValue(backGround.color);
+		bgImageX.getValueFactory().setValue(backGround.x);
+		bgImageY.getValueFactory().setValue(backGround.y);
+		bgImageSize.getValueFactory().setValue(backGround.zoomRatio);
+		bgImageOpacity.getValueFactory().setValue(backGround.opacity);
+		bgImageX.setDisable(backGround.image==null);
+		bgImageY.setDisable(backGround.image==null);
+		bgImageSize.setDisable(backGround.image==null);
+		bgImageOpacity.setDisable(backGround.image==null);
+		isLoading = isl;
+	}
 
 	// 路線を作成し，作成されたLineを返す
 	Line createNewLine(ArrayList<String> staNames) {
@@ -2054,15 +2069,7 @@ public class UIController implements Initializable{
 		int indexRS = tStaList.getSelectionModel().getSelectedIndex();
 		int sizeRS = tStaListOb.size();
 		//駅名フォント設定と背景設定は駅を選択し直しても更新されないので個別に更新
-		bgColor_CP.setValue(backGround.color);
-		bgImageX.getValueFactory().setValue(backGround.x);
-		bgImageY.getValueFactory().setValue(backGround.y);
-		bgImageSize.getValueFactory().setValue(backGround.zoomRatio);
-		bgImageOpacity.getValueFactory().setValue(backGround.opacity);
-		bgImageX.setDisable(backGround.image==null);
-		bgImageY.setDisable(backGround.image==null);
-		bgImageSize.setDisable(backGround.image==null);
-		bgImageOpacity.setDisable(backGround.image==null);
+		updateBackgroundComponents();
 		currentFont.setText(stationFontFamily.get());
 		//まずは左の枠
 		rnList.clear();
