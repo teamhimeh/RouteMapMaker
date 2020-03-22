@@ -2466,7 +2466,8 @@ public class UIController implements Initializable{
 						gc.beginPath();
 						gc.moveTo(p[0], p[1]);
 					}else if(curve) {
-						double[][] l1 = new double[2][];
+						double[][] l1 = new double[2][]; //前前駅-前駅の線の始点&終点
+						double[][] l2 = new double[2][]; //次の駅との線の始点&終点
 						//ベジエ曲線での接続
 						//運転系統が曲線区間から始まる場合，始点側の傾きを推測する必要がある．
 						if(h==1) {
@@ -2479,7 +2480,17 @@ public class UIController implements Initializable{
 							l1[0] = staPoints.get(h-2).getKey();
 						}
 						l1[1] = staPoints.get(h-1).getKey();
-						double[][] l2 = {p, staPoints.get(h+1).getKey()};
+						l2[0] = p;
+						if(h==staPoints.size()-1) {
+							//運転系統が曲線区間で終わる場合，終点側の傾きを推測する必要がある．
+							l2[1] = shiftPoint(lineList.get(k).getStations().get(endPoint).getPointUS(),
+									lineList.get(k).getStations().get(endPoint+1).getPointUS(), zure)[1];
+							staShift = train.getStops().get(train.getStops().size()-1).getShift();
+							l2[1][0] += staShift[0];
+							l2[1][1] += staShift[1];
+						} else {
+							l2[1] = staPoints.get(h+1).getKey();
+						}
 						double[] cp = calcIntersection(l1, l2); //control point
 						gc.quadraticCurveTo(cp[0], cp[1], p[0], p[1]);
 					} else {
