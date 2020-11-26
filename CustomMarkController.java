@@ -21,6 +21,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
@@ -59,6 +60,7 @@ public class CustomMarkController implements Initializable{
 	@FXML ColorPicker prevbgSetter;
 	@FXML ColorPicker paramColor;
 	@FXML ChoiceBox<String> paramDraw;
+	@FXML CheckBox rotateMark;
 	@FXML TextField paramText;
 	@FXML Label paramL1;
 	@FXML Label paramL2;
@@ -106,9 +108,12 @@ public class CustomMarkController implements Initializable{
 			draw();//まずは描画。
 			if(MarkList.getSelectionModel().getSelectedIndex() != -1){
 				setLayerList(customMarks.get(MarkList.getSelectionModel().getSelectedIndex()));
-				if(customMarks.get(MarkList.getSelectionModel().getSelectedIndex()).getLayers().size() != 0){
+				StopMark mark = customMarks.get(MarkList.getSelectionModel().getSelectedIndex());
+				if(mark.getLayers().size() != 0){
 					LayerList.getSelectionModel().select(0);
 				}
+				rotateMark.setDisable(false);
+				rotateMark.setSelected(mark.isRotated());
 			}
 		});
 		MarkAdd.setOnAction((ActionEvent) ->{//空のマークを追加する。
@@ -445,6 +450,13 @@ public class CustomMarkController implements Initializable{
 				setLayerList(customMarks.get(indexM));
 				LayerList.getSelectionModel().select(indexL + 1);
 				draw();
+			}
+		});
+		rotateMark.setOnAction((ActionEvent)->{
+			int index = MarkList.getSelectionModel().getSelectedIndex();
+			if(index != -1){
+				customMarks.get(index).setRotate(rotateMark.isSelected());
+				urManager.push(customMarks.get(index).getRotateProperty(), rotateMark.isSelected());
 			}
 		});
 		Undo.setOnAction((ActionEvent)->{

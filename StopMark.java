@@ -2,6 +2,8 @@ package RouteMapMaker;
 
 import java.util.ArrayList;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -13,6 +15,8 @@ public class StopMark implements Cloneable{//駅停車マークの種類を保�
 	public static final StopMark[] DefaultMarks = {NO_DRAW, CIRCLE};
 	
 	ObservableList<MarkLayer> layers = FXCollections.observableArrayList();//カスタムマークはコレで内容を定義。
+	private BooleanProperty rotate = new SimpleBooleanProperty(false);//lineに合わせてマークを回転させるかどうか
+	
 	public StopMark(){
 		
 	}
@@ -32,5 +36,8 @@ public class StopMark implements Cloneable{//駅停車マークの種類を保�
 		}
 		return t;
 	}
+	public BooleanProperty getRotateProperty() { return rotate; }
+	public void setRotate(boolean b) { rotate.setValue(b); }
+	public boolean isRotated() { return rotate.getValue(); }
 
 }

@@ -2,6 +2,7 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
@@ -19,7 +20,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.CustomMarkController">
+<VBox prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RouteMapMaker.CustomMarkController">
   <children>
       <MenuBar>
         <menus>
@@ -117,6 +118,7 @@
             <Button fx:id="addArc" layoutX="258.0" layoutY="173.0" mnemonicParsing="false" text="円弧" />
             <Button fx:id="addText" layoutX="369.0" layoutY="173.0" mnemonicParsing="false" text="文字列" />
             <Button fx:id="addImage" layoutX="431.0" layoutY="173.0" mnemonicParsing="false" text="画像" />
+            <CheckBox fx:id="rotateMark" disable="true" layoutX="630.0" layoutY="346.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="157.0" text="マークを回転させる" />
          </children></AnchorPane>
   </children>
 </VBox>
