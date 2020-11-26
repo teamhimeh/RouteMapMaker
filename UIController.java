@@ -2946,7 +2946,9 @@ public class UIController implements Initializable{
 		if(pVersion >= 4){//マークの読み込み処理はデータのバージョンが4以上のときのみ。
 			int numOfMarks = Integer.valueOf(p.getProperty("NumOfMarks"));
 			for(int i = 0; i < numOfMarks; i++){
-				customMarks.add(new StopMark());
+				StopMark mark = new StopMark();
+				customMarks.add(mark);
+				mark.setRotate(Boolean.valueOf(p.getProperty("Mark" + i + ".isRotated")));
 				int numOfLayers = Integer.valueOf(p.getProperty("Mark" + i + ".NumOfLayers"));
 				for(int h = 0; h < numOfLayers; h++){
 					MarkLayer layer = new MarkLayer(Integer.valueOf(p.getProperty("Mark" + i + ".layer" + h + ".type")));
@@ -2972,7 +2974,7 @@ public class UIController implements Initializable{
 							layer.setImage(im);
 						}
 					}
-					customMarks.get(i).getLayers().add(layer);
+					mark.getLayers().add(layer);
 				}
 			}
 		}
@@ -3294,6 +3296,7 @@ public class UIController implements Initializable{
 		//customMarksを頂点とするデータ群
 		p.setProperty("NumOfMarks", String.valueOf(customMarks.size()));
 		for(int i = 0; i < customMarks.size(); i++){
+			p.setProperty("Mark" + i + ".isRotated", String.valueOf(customMarks.get(i).isRotated()));
 			p.setProperty("Mark" + i + ".NumOfLayers", String.valueOf(customMarks.get(i).getLayers().size()));
 			for(int h = 0; h < customMarks.get(i).getLayers().size(); h++){
 				MarkLayer l = customMarks.get(i).getLayers().get(h);
