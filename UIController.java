@@ -2518,8 +2518,17 @@ public class UIController implements Initializable{
 					}else if(mm == StopMark.NO_DRAW){
 						//NO_DRAWなのでなにもしない。
 					}else{//カスタムマーク
+						//回転するか？
+						double theta = 0;
+						if(mm.isRotated()){
+							//回転角度を計算する
+							int s_idx = h==0 ? h+1 : h;
+							double dx = staPoints.get(s_idx).getKey()[0] - staPoints.get(s_idx-1).getKey()[0];
+							double dy = staPoints.get(s_idx).getKey()[1] - staPoints.get(s_idx-1).getKey()[1];
+							theta = Math.atan2(dy, dx);
+						}
 						CustomMarkController.markDraw(gc, mm, mark_Size,
-								lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor());
+								lineList.get(k).getTrains().get(i).getStops().get(h).getSta().getShiftCoor(), theta);
 					}
 				}
 			}

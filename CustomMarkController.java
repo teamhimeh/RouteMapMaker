@@ -505,19 +505,20 @@ public class CustomMarkController implements Initializable{
 		this.stage = stage;
 	}
 	
-	public static void markDraw(GraphicsContext gc, StopMark mark, double size, double[] coordinate){//主に実際の路線図上での描画用
-		double coor[] = new double[2];
-		coor[0] = coordinate[0] - size / 2;
-		coor[1] = coordinate[1] - size / 2;
-		actMarkDraw(gc, mark, size, coor);
+	public static void markDraw(GraphicsContext gc, StopMark mark, double size, double[] coordinate, double theta){//主に実際の路線図上での描画用
+		actMarkDraw(gc, mark, size, coordinate, theta);
 	}
 	public static void markDraw(GraphicsContext gc, StopMark mark, double prevSize){//主にプレビュー画面での描画用
 		gc.clearRect(0, 0, prevSize, prevSize);//はじめに全領域消去
-		double[] coordinate = {0.0,0.0};
-		actMarkDraw(gc, mark, prevSize, coordinate);
+		double[] coordinate = {prevSize/2,prevSize/2};
+		actMarkDraw(gc, mark, prevSize, coordinate, 0);
 	}
-	private static void actMarkDraw(GraphicsContext gc, StopMark mark, double size, double[] coor){//実際の描画処理。
+	private static void actMarkDraw(GraphicsContext gc, StopMark mark, double size, double[] coor, double theta){//実際の描画処理。
 		//背景処理、領域消去処理はやりません。
+		gc.save();
+		gc.translate(coor[0], coor[1]);
+		gc.rotate(theta*180/Math.PI);
+		gc.translate(size * -0.5, size * -0.5);
 		for(int i = mark.getLayers().size() - 1; 0 <= i; i--){
 			MarkLayer layer = mark.getLayers().get(i);//現在のレイヤー
 			Double[] prevParams;//パラメーター収納に使う
@@ -529,12 +530,12 @@ public class CustomMarkController implements Initializable{
 				}
 				if(layer.getPaint() == MarkLayer.FILL){
 					gc.setFill(layer.getColor());
-					gc.fillOval(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3]);
+					gc.fillOval(prevParams[0], prevParams[1], prevParams[2], prevParams[3]);
 				}
 				if(layer.getPaint() == MarkLayer.STROKE){
 					gc.setStroke(layer.getColor());
 					gc.setLineWidth(prevParams[4]);
-					gc.strokeOval(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3]);
+					gc.strokeOval(prevParams[0], prevParams[1], prevParams[2], prevParams[3]);
 				}
 				break;
 			case MarkLayer.RECT:
@@ -544,13 +545,13 @@ public class CustomMarkController implements Initializable{
 				}
 				if(layer.getPaint() == MarkLayer.FILL){
 					gc.setFill(layer.getColor());
-					gc.fillRoundRect(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3], prevParams[4],
+					gc.fillRoundRect(prevParams[0], prevParams[1], prevParams[2], prevParams[3], prevParams[4],
 							prevParams[5]);
 				}
 				if(layer.getPaint() == MarkLayer.STROKE){
 					gc.setStroke(layer.getColor());
 					gc.setLineWidth(prevParams[6]);
-					gc.strokeRoundRect(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3],
+					gc.strokeRoundRect(prevParams[0], prevParams[1], prevParams[2], prevParams[3],
 							prevParams[4],prevParams[5]);
 				}
 				break;
@@ -570,13 +571,13 @@ public class CustomMarkController implements Initializable{
 				if(prevParams[7].intValue() == 2) a = ArcType.ROUND;
 				if(layer.getPaint() == MarkLayer.FILL){
 					gc.setFill(layer.getColor());
-					gc.fillArc(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3],prevParams[4],
+					gc.fillArc(prevParams[0], prevParams[1], prevParams[2], prevParams[3],prevParams[4],
 							prevParams[5], a);
 				}
 				if(layer.getPaint() == MarkLayer.STROKE){
 					gc.setStroke(layer.getColor());
 					gc.setLineWidth(prevParams[6]);
-					gc.strokeArc(prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3],prevParams[4],
+					gc.strokeArc(prevParams[0], prevParams[1], prevParams[2], prevParams[3],prevParams[4],
 							prevParams[5], a);
 				}
 				break;
@@ -599,13 +600,13 @@ public class CustomMarkController implements Initializable{
 				if(layer.getPaint() == MarkLayer.FILL){
 					gc.setFill(layer.getColor());
 					gc.setFont(font);
-					gc.fillText(layer.getText(), prevParams[0]+coor[0], prevParams[1]+coor[1]);
+					gc.fillText(layer.getText(), prevParams[0], prevParams[1]);
 				}
 				if(layer.getPaint() == MarkLayer.STROKE){
 					gc.setStroke(layer.getColor());
 					gc.setLineWidth(prevParams[3]);
 					gc.setFont(font);
-					gc.strokeText(layer.getText(), prevParams[0]+coor[0], prevParams[1]+coor[1]);
+					gc.strokeText(layer.getText(), prevParams[0], prevParams[1]);
 				}
 				break;
 			case MarkLayer.IMAGE:
@@ -613,10 +614,12 @@ public class CustomMarkController implements Initializable{
 				for(int k = 0; k < 4; k++){//IMAGEは全てsize倍する
 					prevParams[k] = layer.getParam(k) * size;
 				}
-				gc.drawImage(layer.getImage(), prevParams[0]+coor[0], prevParams[1]+coor[1], prevParams[2], prevParams[3]);
+				gc.drawImage(layer.getImage(), prevParams[0], prevParams[1], prevParams[2], prevParams[3]);
 				break;
 			}
 		}
+		//gc.setTransform(Math.cos(theta),-1*Math.sin(theta),Math.sin(theta),Math.cos(theta),-1*coor[0],-1*coor[1]);
+		gc.restore();
 	}
 	void draw(){//プレビューを描画するメソッド。背景処理はやりません。
 		int markIndex = MarkList.getSelectionModel().getSelectedIndex();
