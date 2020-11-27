@@ -37,6 +37,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -82,6 +83,7 @@ public class CustomMarkController implements Initializable{
 	@FXML ChoiceBox<String> paramST;
 	@FXML Button addOval;
 	@FXML Button addRect;
+	@FXML Button addLine;
 	@FXML Button addArc;
 	@FXML Button addText;
 	@FXML Button addImage;
@@ -197,6 +199,11 @@ public class CustomMarkController implements Initializable{
 						urManager.push(l.getParamProperty().get(4), l.getParam(4), (double)selectedIndex);
 					l.setParam(4, (double) paramST.getSelectionModel().getSelectedIndex());
 				}
+				if(l.getType() == MarkLayer.LINE){
+					if((int)l.getParam(5) != paramST.getSelectionModel().getSelectedIndex())
+						urManager.push(l.getParamProperty().get(5), l.getParam(5), (double)selectedIndex);
+					l.setParam(5, (double) paramST.getSelectionModel().getSelectedIndex());
+				}
 				draw();
 			}
 		});
@@ -283,6 +290,25 @@ public class CustomMarkController implements Initializable{
 				urManager.push(customMarks.get(index).getLayers(), URElements.ArrayCommands.ADD,
 						customMarks.get(index).getLayers().size(), newRect);
 				customMarks.get(index).getLayers().add(newRect);
+				setLayerList(customMarks.get(index));
+				LayerList.getSelectionModel().selectLast();
+				draw();
+			}
+		});
+		addLine.setOnAction((ActionEvent) ->{
+			int index = MarkList.getSelectionModel().getSelectedIndex();
+			if(index != -1){
+				MarkLayer newLine = new MarkLayer(MarkLayer.LINE);
+				newLine.addParam(0.0);//始点X
+				newLine.addParam(0.0);//始点Y
+				newLine.addParam(1.0);//終点X
+				newLine.addParam(1.0);//終点Y
+				newLine.addParam(0.05);//lineWidth
+				newLine.addParam(0);//端はSQUARE
+				newLine.setColor(Color.WHITE);
+				urManager.push(customMarks.get(index).getLayers(), URElements.ArrayCommands.ADD,
+						customMarks.get(index).getLayers().size(), newLine);
+				customMarks.get(index).getLayers().add(newLine);
 				setLayerList(customMarks.get(index));
 				LayerList.getSelectionModel().selectLast();
 				draw();
@@ -555,6 +581,17 @@ public class CustomMarkController implements Initializable{
 							prevParams[4],prevParams[5]);
 				}
 				break;
+			case MarkLayer.LINE:
+				prevParams = new Double[6];
+				for(int k = 0; k < 5; k++){//LINEは全てsize倍する
+					prevParams[k] = layer.getParam(k) * size;
+				}
+				prevParams[5] = layer.getParam(5);
+				gc.setStroke(layer.getColor());
+				gc.setLineWidth(prevParams[4]);
+				gc.setLineCap(prevParams[5].intValue()==1 ? StrokeLineCap.ROUND : StrokeLineCap.SQUARE);
+				gc.strokeLine(prevParams[0],prevParams[1],prevParams[2],prevParams[3]);
+				break;
 			case MarkLayer.ARC:
 				prevParams = new Double[8];//ARCはsize倍するやつとしないやつがある。
 				prevParams[0] = layer.getParam(0) * size;
@@ -644,7 +681,7 @@ public class CustomMarkController implements Initializable{
 			if(l.getType() == MarkLayer.ARC) LayerListOb.add("円弧["+fs+"]");
 			if(l.getType() == MarkLayer.RECT) LayerListOb.add("長方形["+fs+"]");
 			if(l.getType() == MarkLayer.POLYGON) LayerListOb.add("多角形["+fs+"]");
-			if(l.getType() == MarkLayer.POLYLINE) LayerListOb.add("ポリライン["+fs+"]");
+			if(l.getType() == MarkLayer.LINE) LayerListOb.add("直線["+fs+"]");
 			if(l.getType() == MarkLayer.TEXT) LayerListOb.add("文字列["+fs+"]");
 			if(l.getType() == MarkLayer.IMAGE) LayerListOb.add("画像["+l.getText()+"]");
 		}
@@ -675,6 +712,21 @@ public class CustomMarkController implements Initializable{
 			if(l.getPaint() == MarkLayer.STROKE) paramDraw.getSelectionModel().select(1);
 			String[] texts = {"左上X","左上Y","幅","高さ","角円幅","角円高さ","線の太さ"};
 			setNumericParams(l,texts);
+		}else if(l.getType() == MarkLayer.LINE){
+			paramColor.setDisable(false);
+			paramColor.setValue(l.getColor());
+			paramDraw.setDisable(false);
+			paramLT.setDisable(true);
+			paramST.setDisable(true);
+			paramDraw.setDisable(true);
+			String[] texts = {"始点X","始点Y","終点X","終点Y","線の太さ"};
+			setNumericParams(l,texts);
+			paramLT.setDisable(false);
+			paramLT.setText("閉じタイプ");
+			paramST.setDisable(false);
+			ObservableList<String> paramSTOb = FXCollections.observableArrayList("SQUARE","ROUND");
+			paramST.setItems(paramSTOb);
+			paramST.getSelectionModel().select((int)l.getParam(5));
 		}else if(l.getType() == MarkLayer.ARC){
 			paramColor.setDisable(false);
 			paramColor.setValue(l.getColor());

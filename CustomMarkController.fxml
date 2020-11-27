@@ -64,7 +64,7 @@
             <ColorPicker fx:id="prevbgSetter" layoutX="423.0" layoutY="73.0" />
             <Label layoutX="173.0" layoutY="149.0" text="レイヤー追加" />
             <Button fx:id="addOval" layoutX="183.0" layoutY="173.0" mnemonicParsing="false" text="円・楕円" />
-            <Button fx:id="addRect" layoutX="307.0" layoutY="173.0" mnemonicParsing="false" text="長方形" />
+            <Button fx:id="addRect" layoutX="357.0" layoutY="173.0" mnemonicParsing="false" text="長方形" />
             <ListView fx:id="LayerList" layoutX="629.0" layoutY="69.0" prefHeight="264.0" prefWidth="157.0" />
             <Label layoutX="176.0" layoutY="38.0" text="※実際の大きさは路線等での設定によります">
                <font>
@@ -116,9 +116,10 @@
                </font>
             </Button>
             <Button fx:id="addArc" layoutX="258.0" layoutY="173.0" mnemonicParsing="false" text="円弧" />
-            <Button fx:id="addText" layoutX="369.0" layoutY="173.0" mnemonicParsing="false" text="文字列" />
-            <Button fx:id="addImage" layoutX="431.0" layoutY="173.0" mnemonicParsing="false" text="画像" />
+            <Button fx:id="addText" layoutX="420.0" layoutY="173.0" mnemonicParsing="false" text="文字列" />
+            <Button fx:id="addImage" layoutX="482.0" layoutY="173.0" mnemonicParsing="false" text="画像" />
             <CheckBox fx:id="rotateMark" disable="true" layoutX="630.0" layoutY="346.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="157.0" text="マークを回転させる" />
+            <Button fx:id="addLine" layoutX="308.0" layoutY="173.0" mnemonicParsing="false" text="直線" />
          </children></AnchorPane>
   </children>
 </VBox>

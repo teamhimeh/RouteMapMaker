@@ -20,7 +20,7 @@ public class MarkLayer implements Cloneable{//マーク編集における各レ�
 	public static final int ARC = 1;//円弧。通常の円は楕円を使う。
 	public static final int RECT = 2;//角の丸い長方形。ただの長方形含む。shapeとcanvasでパラメーターが全然違うので注意！
 	public static final int POLYGON = 3;//多角形
-	public static final int POLYLINE = 4;//ポリライン。
+	public static final int LINE = 4;//直線
 	public static final int TEXT = 5;//文字列
 	public static final int IMAGE = 6;//外部画像
 	/*
@@ -31,7 +31,7 @@ public class MarkLayer implements Cloneable{//マーク編集における各レ�
 	 * ARC：Color,paint,{X,Y,幅,高さ,始角,角の大きさ,lineWidth,閉じタイプ（0:CHORD,1:OPEN,2:ROUND）
 	 * RECT：Color,paint,{左上X,左上Y,幅,高さ,円弧幅,円弧高さ,lineWidth}
 	 * POLYGON
-	 * POLYLINE
+	 * LINE：Color,paint,{始点X,始点Y,終点X,終点Y,lineWidth}
 	 * TEXT：Color,paint,text,{X,Y,文字サイズ,lineWidth,文字タイプ}
 	 * IMAGE：image,text,{左上X,左上Y,描画幅,描画高さ}
 	 */
@@ -59,6 +59,10 @@ public class MarkLayer implements Cloneable{//マーク編集における各レ�
 		case RECT:
 			boolean[] b2 = {true,true,true,true,true,true,true};
 			paramsProportion = b2;
+			break;
+		case LINE:
+			boolean[] b5 = {true,true,true,true,true,false};
+			paramsProportion = b5;
 			break;
 		case TEXT:
 			boolean[] b3 = {true,true,true,true,false};
