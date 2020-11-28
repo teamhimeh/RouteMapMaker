@@ -186,6 +186,7 @@ public class UIController implements Initializable{
 	@FXML Canvas canvas;
 	@FXML CheckBox showBackInLE;
 	@FXML CheckBox staCurveConnection;
+	@FXML CheckBox staNameNoShow;
 	@FXML ColorPicker bgColor_CP;
 	@FXML ColorPicker re_line_CP;
 	@FXML ColorPicker re_mark_CP;
@@ -695,6 +696,22 @@ public class UIController implements Initializable{
 			urManager.push(cp, cp.get());
 			lineDraw();
 		});
+		staNameNoShow.setOnAction((ActionEvent)->{
+			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
+			int indexS = StationList.getSelectionModel().getSelectedIndex();
+			if(indexR == -1 || indexS == -1) { return; }
+			Station sta = lineList.get(indexR).getStations().get(indexS);
+			if(staNameNoShow.isSelected()) {
+				urManager.push(sta.getNameSizeProperty(), sta.getNameSize(), -1);
+				sta.setNameSize(-1);
+			} else {
+				urManager.push(sta.getNameSizeProperty(), -1, 0);
+				sta.setNameSize(0);
+				staSize.getValueFactory().setValue(0);
+			}
+			staSize.setDisable(staNameNoShow.isSelected());
+			lineDraw();
+		});
 		staRemoveRestr.setOnAction((ActionEvent)->{
 			int indexR = RouteTable.getSelectionModel().getSelectedIndex();
 			int indexS = StationList.getSelectionModel().getSelectedIndex();
@@ -779,6 +796,8 @@ public class UIController implements Initializable{
 				}
 				Station s = lineList.get(indexR).getStations().get(indexS);
 				staSize.getValueFactory().setValue(s.getNameSize());
+				staSize.setDisable(s.getNameSize()==-1);
+				staNameNoShow.setSelected(s.getNameSize()==-1);
 				staStyle.getSelectionModel().select(s.getNameStyle());
 				staCurveConnection.setDisable(!lineList.get(indexR).isCurvable(indexS));
 				staCurveConnection.setSelected(lineList.get(indexR).getCurveConnection(indexS));
